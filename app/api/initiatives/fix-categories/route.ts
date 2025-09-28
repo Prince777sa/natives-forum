@@ -27,9 +27,10 @@ export async function POST() {
             [category.name, category.slug, category.description]
           );
           createdCategories.push(result.rows[0]);
-        } catch (error: any) {
+        } catch (error: unknown) {
           // Category might already exist, skip
-          if (error.code === '23505') { // unique violation
+          const dbError = error as { code?: string };
+          if (dbError.code === '23505') { // unique violation
             console.log(`Category ${category.name} already exists`);
           } else {
             throw error;

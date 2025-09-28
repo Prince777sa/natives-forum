@@ -54,8 +54,9 @@ export async function POST() {
           createdCategories.push(result.rows[0]);
           console.log(`Created category: ${category.name}`);
 
-        } catch (error: any) {
-          if (error.code === '23505') { // unique violation - category already exists
+        } catch (error: unknown) {
+          const dbError = error as { code?: string };
+          if (dbError.code === '23505') { // unique violation - category already exists
             const existingResult = await client.query(
               'SELECT id, name, slug FROM categories WHERE slug = $1',
               [category.slug]
