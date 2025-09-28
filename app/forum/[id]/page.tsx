@@ -642,124 +642,130 @@ export default function ForumPostPage() {
                 <Card key={comment.id} className="rounded-none">
                   <CardContent className="pt-6">
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <UserInfo
-                          user={{
-                            id: comment.author.id,
-                            firstName: comment.author.firstName,
-                            lastName: comment.author.lastName,
-                            membershipNumber: comment.author.membershipNumber,
-                            userRole: comment.author.userRole,
-                            profileImageUrl: comment.author.profileImageUrl,
-                            verificationStatus: comment.author.verificationStatus
-                          }}
-                          avatarSize="sm"
-                          showRole={true}
-                          showMembershipNumber={false}
-                          layout="horizontal"
-                        />
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
+                      {/* User Information Row */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3">
+                          <UserInfo
+                            user={{
+                              id: comment.author.id,
+                              firstName: comment.author.firstName,
+                              lastName: comment.author.lastName,
+                              membershipNumber: comment.author.membershipNumber,
+                              userRole: comment.author.userRole,
+                              profileImageUrl: comment.author.profileImageUrl,
+                              verificationStatus: comment.author.verificationStatus
+                            }}
+                            avatarSize="md"
+                            showRole={true}
+                            showMembershipNumber={false}
+                            layout="horizontal"
+                            className="flex-shrink-0"
+                          />
+                          <span className="text-sm text-gray-500 mt-1">
                             {formatDate(comment.createdAt)}
                           </span>
-                          {/* Edit/Delete Dropdown - Only show for comment author or admin */}
-                          {isAuthenticated && user && (user.id === comment.author.id || user.userRole === 'admin') && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                                  <MoreVertical className="h-3 w-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditComment(comment)}>
-                                  <Edit className="h-3 w-3 mr-2" />
-                                  Edit Comment
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteComment(comment.id)}
-                                  className="text-red-600 focus:text-red-600"
-                                  disabled={deletingCommentId === comment.id}
-                                >
-                                  <Trash2 className="h-3 w-3 mr-2" />
-                                  {deletingCommentId === comment.id ? 'Deleting...' : 'Delete Comment'}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
                         </div>
+                        {/* Edit/Delete Dropdown - Only show for comment author or admin */}
+                        {isAuthenticated && user && (user.id === comment.author.id || user.userRole === 'admin') && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditComment(comment)}>
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Comment
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="text-red-600 focus:text-red-600"
+                                disabled={deletingCommentId === comment.id}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                {deletingCommentId === comment.id ? 'Deleting...' : 'Delete Comment'}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
-                      {editingCommentId === comment.id ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            value={editCommentContent}
-                            onChange={(e) => setEditCommentContent(e.target.value)}
-                            className="border-black rounded-none resize-none min-h-[80px]"
-                            maxLength={1000}
-                            placeholder="Edit your comment..."
-                          />
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs text-gray-500">
-                              {editCommentContent.length}/1000 characters
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingCommentId(null);
-                                  setEditCommentContent('');
-                                }}
-                                className="rounded-none"
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() => handleCommentEditSubmit(comment.id)}
-                                disabled={!editCommentContent.trim() || submittingCommentEdit}
-                                className="bg-orange-600 hover:bg-orange-700 text-white rounded-none"
-                              >
-                                {submittingCommentEdit ? 'Updating...' : 'Update'}
-                              </Button>
+
+                      {/* Comment Content and Actions Row */}
+                      <div className="w-full px-4 py-3 bg-gray-50 rounded-lg">
+                        {editingCommentId === comment.id ? (
+                          <div className="space-y-3">
+                            <Textarea
+                              value={editCommentContent}
+                              onChange={(e) => setEditCommentContent(e.target.value)}
+                              className="border-black rounded-none resize-none min-h-[80px]"
+                              maxLength={1000}
+                              placeholder="Edit your comment..."
+                            />
+                            <div className="flex items-center justify-between">
+                              <div className="text-xs text-gray-500">
+                                {editCommentContent.length}/1000 characters
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingCommentId(null);
+                                    setEditCommentContent('');
+                                  }}
+                                  className="rounded-none"
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleCommentEditSubmit(comment.id)}
+                                  disabled={!editCommentContent.trim() || submittingCommentEdit}
+                                  className="bg-orange-600 hover:bg-orange-700 text-white rounded-none"
+                                >
+                                  {submittingCommentEdit ? 'Updating...' : 'Update'}
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                            {comment.content}
-                          </p>
+                        ) : (
+                          <div className="space-y-3">
+                            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                              {comment.content}
+                            </p>
 
-                          {/* Like/Dislike Buttons */}
-                          <div className="flex items-center gap-4">
-                            <button
-                              onClick={() => handleCommentLikeDislike(comment.id, true)}
-                              disabled={!isAuthenticated}
-                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                                comment.userReaction === true
-                                  ? 'bg-green-100 text-green-700 border border-green-300'
-                                  : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
-                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                            >
-                              <ThumbsUp className="h-3 w-3" />
-                              <span>{comment.likeCount || 0}</span>
-                            </button>
+                            {/* Like/Dislike Buttons */}
+                            <div className="flex items-center gap-4">
+                              <button
+                                onClick={() => handleCommentLikeDislike(comment.id, true)}
+                                disabled={!isAuthenticated}
+                                className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                  comment.userReaction === true
+                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+                                } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                              >
+                                <ThumbsUp className="h-3 w-3" />
+                                <span>{comment.likeCount || 0}</span>
+                              </button>
 
-                            <button
-                              onClick={() => handleCommentLikeDislike(comment.id, false)}
-                              disabled={!isAuthenticated}
-                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                                comment.userReaction === false
-                                  ? 'bg-red-100 text-red-700 border border-red-300'
-                                  : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
-                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                            >
-                              <ThumbsDown className="h-3 w-3" />
-                              <span>{comment.dislikeCount || 0}</span>
-                            </button>
+                              <button
+                                onClick={() => handleCommentLikeDislike(comment.id, false)}
+                                disabled={!isAuthenticated}
+                                className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                  comment.userReaction === false
+                                    ? 'bg-red-100 text-red-700 border border-red-300'
+                                    : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                                } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                              >
+                                <ThumbsDown className="h-3 w-3" />
+                                <span>{comment.dislikeCount || 0}</span>
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
