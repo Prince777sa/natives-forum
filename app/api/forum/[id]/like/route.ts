@@ -85,7 +85,7 @@ export async function POST(
         } else {
           // Different reaction - update it
           await client.query(
-            'UPDATE forum_post_likes SET is_like = $1, updated_at = NOW() WHERE id = $2',
+            'UPDATE forum_post_likes SET is_like = $1 WHERE id = $2',
             [isLike, existingReaction.id]
           );
           userReaction = isLike;
@@ -93,8 +93,8 @@ export async function POST(
       } else {
         // No existing reaction - add new one
         await client.query(
-          `INSERT INTO forum_post_likes (post_id, user_id, is_like, created_at, updated_at)
-           VALUES ($1, $2, $3, NOW(), NOW())`,
+          `INSERT INTO forum_post_likes (post_id, user_id, is_like, created_at)
+           VALUES ($1, $2, $3, NOW())`,
           [postId, userId, isLike]
         );
         userReaction = isLike;
