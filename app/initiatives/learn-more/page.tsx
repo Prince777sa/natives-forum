@@ -37,8 +37,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import Image from 'next/image';
-import VerificationBadge from '@/components/VerificationBadge';
+import UserInfo from '@/components/UserInfo';
 
 interface Comment {
   id: string;
@@ -757,20 +756,6 @@ const InitiativeLearnMore = () => {
     setCommentToDelete(null);
   };
 
-  const getRoleLabel = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return { text: 'Admin', color: 'bg-orange-100 text-orange-800 border-orange-300' };
-      case 'staff':
-        return { text: 'Staff', color: 'bg-green-100 text-green-800 border-green-300' };
-      case 'volunteer':
-        return { text: 'Volunteer', color: 'bg-blue-100 text-blue-800 border-blue-300' };
-      case 'regular':
-      case 'member':
-      default:
-        return { text: 'Member', color: 'bg-gray-100 text-gray-800 border-gray-300' };
-    }
-  };
 
   const canModifyComment = (comment: Comment) => {
     if (!user) return false;
@@ -1076,34 +1061,22 @@ const InitiativeLearnMore = () => {
                 comments.map((comment) => (
                   <div key={comment.id} className="border-b border-gray-200 pb-4 last:border-b-0">
                     <div className="flex items-start gap-3">
-                      <Link href={`/profile/${comment.user_id}`} className="relative flex-shrink-0 hover:opacity-80 transition-opacity">
-                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
-                          {comment.profile_image_url ? (
-                            <Image
-                              src={comment.profile_image_url}
-                              alt={`${comment.first_name} ${comment.last_name}`}
-                              width={40}
-                              height={40}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <Users className="h-6 w-6 text-gray-500" />
-                          )}
-                        </div>
-                        <VerificationBadge
-                          isVerified={comment.verification_status === 'yes'}
-                          size="sm"
-                        />
-                      </Link>
+                      <UserInfo
+                        user={{
+                          id: comment.user_id,
+                          firstName: comment.first_name,
+                          lastName: comment.last_name,
+                          userRole: comment.user_role,
+                          profileImageUrl: comment.profile_image_url,
+                          verificationStatus: comment.verification_status || 'no'
+                        }}
+                        avatarSize="md"
+                        showRole={true}
+                        className="flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <Link href={`/profile/${comment.user_id}`} className="font-medium text-black hover:text-blue-600 transition-colors">
-                              {comment.first_name} {comment.last_name}
-                            </Link>
-                            <Badge className={`text-xs px-2 py-0.5 border ${getRoleLabel(comment.user_role).color}`}>
-                              {getRoleLabel(comment.user_role).text}
-                            </Badge>
                             <span className="text-sm text-gray-500">
                               {new Date(comment.created_at).toLocaleDateString()}
                             </span>

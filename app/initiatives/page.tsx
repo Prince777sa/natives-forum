@@ -57,21 +57,21 @@ const InitiativesPage = () => {
   const getInitiativeIcon = (title: string, category: string) => {
     if (title.includes('Bank') || category === 'Banking') return Building2;
     if (title.includes('Spaza') || category === 'Informal Economy') return ShoppingCart;
-    if (title.includes('Food') || category === 'Agriculture') return Wheat;
-    if (title.includes('Industrial') || category === 'Industry') return Factory;
-    if (title.includes('Political') || category === 'Politics') return Vote;
+    if (title.includes('Food') || category?.includes('Agriculture')) return Wheat;
+    if (title.includes('Industrial') || category?.includes('Manufacturing') || category?.includes('Industry')) return Factory;
+    if (title.includes('Political') || category?.includes('Politics')) return Vote;
     return Building2; // default
   };
 
   const getInitiativeColor = (title: string, category: string) => {
-    if (title.includes('Food') || category === 'Agriculture') return "bg-[#cdf556] text-black";
-    if (title.includes('Bank') || title.includes('Political') || category === 'Banking' || category === 'Politics') return "bg-orange-600";
+    if (title.includes('Food') || category?.includes('Agriculture')) return "bg-[#cdf556] text-black";
+    if (title.includes('Bank') || title.includes('Political') || category === 'Banking' || category?.includes('Politics')) return "bg-orange-600";
     return "bg-black"; // default
   };
 
   const getInitiativeLink = (title: string) => {
     if (title.includes('Bank')) return '/initiatives/commercial-bank';
-    if (title.includes('Spaza')) return '/initiatives/spaza-shop';
+    if (title.includes('Spaza')) return '/initiatives/informal-economy';
     if (title.includes('Food')) return '/initiatives/food-value-chain';
     if (title.includes('Industrial')) return '/initiatives/industrial-development';
     if (title.includes('Political')) return '/initiatives/political-representation';
@@ -86,7 +86,7 @@ const InitiativesPage = () => {
       "Focus on serving native community needs"
     ];
     if (title.includes('Spaza')) return [
-      "Support for new spaza shop owners",
+      "Support for new the informal economy entrepreneurs",
       "Training and mentorship programs",
       "Access to bank financing",
       "Mobile payment integration"
@@ -183,13 +183,16 @@ const InitiativesPage = () => {
               Banking
             </Button>
             <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
-              Agriculture
+              Agriculture & Food
             </Button>
             <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
               Informal Economy
             </Button>
             <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
-              Politics
+              Manufacturing & Industry
+            </Button>
+            <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
+              Politics & Governance
             </Button>
           </div>
         </div>
@@ -200,9 +203,10 @@ const InitiativesPage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {initiatives.map((initiative) => {
-              const IconComponent = getInitiativeIcon(initiative.title, initiative.category?.name || '');
+              const categoryName = initiative.category?.name || '';
+              const IconComponent = getInitiativeIcon(initiative.title, categoryName);
               const progressPercentage = getProgressPercentage(initiative.currentParticipants, initiative.targetParticipants);
-              const initiativeColor = getInitiativeColor(initiative.title, initiative.category?.name || '');
+              const initiativeColor = getInitiativeColor(initiative.title, categoryName);
               const initiativeLink = getInitiativeLink(initiative.title);
               const initiativeDetails = getInitiativeDetails(initiative.title);
 

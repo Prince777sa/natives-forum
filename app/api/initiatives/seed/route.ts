@@ -16,18 +16,14 @@ export async function POST() {
 
       console.log('Existing initiatives:', existingTitles);
 
-      // Get banking category id (we know this exists from Commercial Bank initiative)
-      const bankingCategoryResult = await client.query('SELECT id FROM categories WHERE name = $1', ['Banking']);
-      let bankingCategoryId = bankingCategoryResult.rows[0]?.id;
+      // Get all categories from the database
+      const categoriesResult = await client.query('SELECT id, name, slug FROM categories');
+      const categories = categoriesResult.rows.reduce((acc, row) => {
+        acc[row.slug] = row.id;
+        return acc;
+      }, {} as Record<string, string>);
 
-      // If no banking category, create it
-      if (!bankingCategoryId) {
-        const categoryResult = await client.query(
-          'INSERT INTO categories (name, slug, description, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING id',
-          ['Banking', 'banking', 'Banking related initiatives']
-        );
-        bankingCategoryId = categoryResult.rows[0].id;
-      }
+      console.log('Available categories:', categories);
 
       // Get a default author (first user) for new initiatives
       const userResult = await client.query('SELECT id FROM users LIMIT 1');
@@ -42,15 +38,27 @@ export async function POST() {
       }
 
       console.log('Author ID:', authorId);
-      console.log('Banking category ID:', bankingCategoryId);
 
-      // Define the initiatives to add
+      // Helper function to get category ID by slug or name
+      const getCategoryId = (preferredSlug: string, fallbackName?: string) => {
+        return categories[preferredSlug] ||
+               Object.keys(categories).find(slug =>
+                 slug.includes(preferredSlug.split('-')[0])
+               ) ||
+               (fallbackName && Object.keys(categories).find(slug =>
+                 categories[slug] === fallbackName
+               )) ||
+               categories['banking'] || // fallback to banking if it exists
+               Object.values(categories)[0]; // fallback to first category
+      };
+
+      // Define the initiatives to add with proper categories
       const initiativesToAdd = [
         {
           title: "Spaza Shop Network",
           description: "Reclaim the informal economy by creating a network of native-owned spaza shops. Support local entrepreneurs and keep money circulating in our communities.",
           content: "The Spaza Shop Network initiative aims to transform South Africa's informal economy by establishing a comprehensive network of native-owned spaza shops.",
-          categoryId: bankingCategoryId, // Use existing category for now
+          categoryId: getCategoryId('informal-economy', 'Informal Economy'),
           targetParticipants: 2000,
           targetAmount: 50000000
         },
@@ -58,7 +66,7 @@ export async function POST() {
           title: "Food Value Chain",
           description: "Control our food system from farm to table. Invest in sustainable, non-GMO food production and distribution networks owned by our community.",
           content: "The Food Value Chain initiative focuses on achieving food sovereignty through community-owned agricultural systems.",
-          categoryId: bankingCategoryId, // Use existing category for now
+          categoryId: getCategoryId('agriculture', 'Agriculture'),
           targetParticipants: 3000,
           targetAmount: 200000000
         },
@@ -66,7 +74,7 @@ export async function POST() {
           title: "Industrial Development",
           description: "Build manufacturing capacity to produce what we consume. Invest in strategic industries and develop the technical skills needed for economic self-sufficiency.",
           content: "The Industrial Development initiative aims to build South Africa's manufacturing capacity in strategic sectors.",
-          categoryId: bankingCategoryId, // Use existing category for now
+          categoryId: getCategoryId('manufacturing', 'Manufacturing'),
           targetParticipants: 5000,
           targetAmount: 500000000
         },
@@ -74,7 +82,7 @@ export async function POST() {
           title: "Political Representation",
           description: "Build a political movement that truly represents native interests. Participate in creating policy proposals and candidate selection for future elections.",
           content: "The Political Representation initiative focuses on building authentic political representation for native interests in South Africa.",
-          categoryId: bankingCategoryId, // Use existing category for now
+          categoryId: getCategoryId('politics', 'Politics'),
           targetParticipants: 10000,
           targetAmount: 100000000
         }
