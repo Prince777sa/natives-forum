@@ -1059,122 +1059,124 @@ const InitiativeLearnMore = () => {
                 </div>
               ) : (
                 comments.map((comment) => (
-                  <div key={comment.id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                    <div className="flex items-start gap-3">
-                      <UserInfo
-                        user={{
-                          id: comment.user_id,
-                          firstName: comment.first_name,
-                          lastName: comment.last_name,
-                          userRole: comment.user_role,
-                          profileImageUrl: comment.profile_image_url,
-                          verificationStatus: comment.verification_status || 'no'
-                        }}
-                        avatarSize="md"
-                        showRole={true}
-                        className="flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">
-                              {new Date(comment.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                          {isAuthenticated && canModifyComment(comment) && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEditComment(comment.id, comment.comment)}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteComment(comment.id)}
-                                  className="text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                        </div>
+                  <div key={comment.id} className="border-b border-gray-200 pb-4 last:border-b-0 space-y-3">
+                    {/* User Information Row */}
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        <UserInfo
+                          user={{
+                            id: comment.user_id,
+                            firstName: comment.first_name,
+                            lastName: comment.last_name,
+                            userRole: comment.user_role,
+                            profileImageUrl: comment.profile_image_url,
+                            verificationStatus: comment.verification_status || 'no'
+                          }}
+                          avatarSize="md"
+                          showRole={true}
+                          className="flex-shrink-0"
+                        />
+                        <span className="text-sm text-gray-500 mt-1">
+                          {new Date(comment.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {isAuthenticated && canModifyComment(comment) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEditComment(comment.id, comment.comment)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteComment(comment.id)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
 
-                        {editingCommentId === comment.id ? (
-                          <div className="space-y-3 mb-3">
-                            <Textarea
-                              value={editingCommentText}
-                              onChange={(e) => setEditingCommentText(e.target.value)}
-                              className="border-black rounded-none resize-none"
-                              rows={3}
-                              maxLength={500}
-                            />
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-500">
-                                {editingCommentText.length}/500 characters
-                              </span>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={handleCancelEdit}
-                                  className="border-gray-300 text-gray-600 hover:bg-gray-50 rounded-none"
-                                >
-                                  <X className="h-4 w-4 mr-1" />
-                                  Cancel
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleSaveEdit(comment.id)}
-                                  disabled={!editingCommentText.trim()}
-                                  className="bg-orange-600 hover:bg-orange-700 text-white rounded-none"
-                                >
-                                  <Check className="h-4 w-4 mr-1" />
-                                  Save
-                                </Button>
-                              </div>
+                    {/* Comment Content and Actions Row */}
+                    <div className="w-full px-4 py-3 bg-gray-50 rounded-lg">
+                      {editingCommentId === comment.id ? (
+                        <div className="space-y-3">
+                          <Textarea
+                            value={editingCommentText}
+                            onChange={(e) => setEditingCommentText(e.target.value)}
+                            className="border-black rounded-none resize-none"
+                            rows={3}
+                            maxLength={500}
+                          />
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              {editingCommentText.length}/500 characters
+                            </span>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleCancelEdit}
+                                className="border-gray-300 text-gray-600 hover:bg-gray-50 rounded-none"
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveEdit(comment.id)}
+                                disabled={!editingCommentText.trim()}
+                                className="bg-orange-600 hover:bg-orange-700 text-white rounded-none"
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Save
+                              </Button>
                             </div>
                           </div>
-                        ) : (
-                          <p className="text-gray-700 text-sm leading-relaxed mb-3">
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-gray-700 text-sm leading-relaxed">
                             {comment.comment}
                           </p>
-                        )}
 
-                        {/* Like/Dislike Buttons */}
-                        <div className="flex items-center gap-4">
-                          <button
-                            onClick={() => handleLikeComment(comment.id, true)}
-                            disabled={!isAuthenticated}
-                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                              comment.user_reaction === true
-                                ? 'bg-green-100 text-green-700 border border-green-300'
-                                : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
-                            } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                          >
-                            <ThumbsUp className="h-3 w-3" />
-                            <span>{comment.like_count || 0}</span>
-                          </button>
+                          {/* Like/Dislike Buttons */}
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => handleLikeComment(comment.id, true)}
+                              disabled={!isAuthenticated}
+                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                comment.user_reaction === true
+                                  ? 'bg-green-100 text-green-700 border border-green-300'
+                                  : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            >
+                              <ThumbsUp className="h-3 w-3" />
+                              <span>{comment.like_count || 0}</span>
+                            </button>
 
-                          <button
-                            onClick={() => handleLikeComment(comment.id, false)}
-                            disabled={!isAuthenticated}
-                            className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
-                              comment.user_reaction === false
-                                ? 'bg-red-100 text-red-700 border border-red-300'
-                                : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
-                            } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                          >
-                            <ThumbsDown className="h-3 w-3" />
-                            <span>{comment.dislike_count || 0}</span>
-                          </button>
+                            <button
+                              onClick={() => handleLikeComment(comment.id, false)}
+                              disabled={!isAuthenticated}
+                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                comment.user_reaction === false
+                                  ? 'bg-red-100 text-red-700 border border-red-300'
+                                  : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            >
+                              <ThumbsDown className="h-3 w-3" />
+                              <span>{comment.dislike_count || 0}</span>
+                            </button>
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ))
