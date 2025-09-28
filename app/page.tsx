@@ -129,9 +129,11 @@ const LandingPage = () => {
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-4">{initiative.title}</h3>
                     <p className="text-gray-600 leading-relaxed mb-6">{initiative.description}</p>
-                    <Button variant="outline" className="group-hover:bg-gray-900 group-hover:text-white transition-colors rounded-none duration-300">
-                      Join discussion <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+                    <Link href="/initiatives">
+                      <Button variant="outline" className="group-hover:bg-gray-900 group-hover:text-white transition-colors rounded-none duration-300">
+                        Join discussion <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
+                    </Link>
                   </CardContent>
                 </Card>
               );
