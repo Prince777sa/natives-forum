@@ -1,8 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -12,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import {
   ThumbsUp,
   ThumbsDown,
@@ -22,7 +20,6 @@ import {
   Calendar,
   User,
   TrendingUp,
-  Eye,
   Filter
 } from 'lucide-react';
 import Link from 'next/link';
@@ -54,7 +51,7 @@ interface Comment {
 }
 
 const PollsPage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [userVotes, setUserVotes] = useState<{ [pollId: string]: string | null }>({});
@@ -63,11 +60,7 @@ const PollsPage = () => {
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
-  useEffect(() => {
-    fetchPolls();
-  }, []);
-
-  const fetchPolls = async () => {
+  const fetchPolls = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/polls');
@@ -93,7 +86,11 @@ const PollsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    fetchPolls();
+  }, [fetchPolls]);
 
   const handleVote = async (pollId: string, voteType: 'up' | 'down') => {
     if (!isAuthenticated) {

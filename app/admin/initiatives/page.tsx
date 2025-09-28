@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -118,19 +117,7 @@ const InitiativeManagement = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [updating, setUpdating] = useState(false);
 
-  useEffect(() => {
-    // Redirect if not authenticated or not admin
-    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
-      router.push('/admin');
-      return;
-    }
-
-    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
-      fetchInitiatives();
-    }
-  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, sortBy, sortOrder]);
-
-  const fetchInitiatives = async () => {
+  const fetchInitiatives = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -154,7 +141,19 @@ const InitiativeManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit, searchTerm, sortBy, sortOrder]);
+
+  useEffect(() => {
+    // Redirect if not authenticated or not admin
+    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
+      router.push('/admin');
+      return;
+    }
+
+    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
+      fetchInitiatives();
+    }
+  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, sortBy, sortOrder, fetchInitiatives]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -451,7 +450,7 @@ const InitiativeManagement = () => {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Delete Initiative</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      Are you sure you want to delete "{initiative.title}"?
+                                      Are you sure you want to delete &quot;{initiative.title}&quot;?
                                       This action cannot be undone and will also delete all associated pledges.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>

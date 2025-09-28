@@ -8,8 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Building2, Plus, Trash2, Users, MapPin, TrendingUp, Target, LogIn, Info, MessageCircle, Send, ThumbsUp, ThumbsDown, MoreVertical, Edit, X, Check } from 'lucide-react';
+import { Building2, Plus, Trash2, Users, MapPin, Target, LogIn, Info, MessageCircle, Send, ThumbsUp, ThumbsDown, MoreVertical, Edit, X, Check } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,12 +26,71 @@ interface AdditionalPledge {
   gender: string;
 }
 
+interface Comment {
+  id: string;
+  text: string;
+  author: {
+    name: string;
+    role: string;
+    membershipNumber: string;
+  };
+  created_at: string;
+  likes: number;
+  dislikes: number;
+  hasLiked?: boolean;
+  hasDisliked?: boolean;
+  comment: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  user_role: string;
+  profile_image_url?: string;
+  verification_status?: string;
+  like_count: number;
+  dislike_count: number;
+  user_reaction: boolean | null;
+  updated_at?: string;
+}
+
+interface Initiative {
+  id: string;
+  title: string;
+  description: string;
+  currentAmount: number;
+  targetAmount: number;
+  currentParticipants: number;
+  targetParticipants: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface PledgeStats {
+  totalAmount: number;
+  totalParticipants: number;
+  provinceBreakdown: ProvinceDataItem[];
+  stats: {
+    malePledges: number;
+    femalePledges: number;
+    otherPledges?: number;
+  };
+}
+
+interface ProvinceDataItem {
+  province: string;
+  pledges: number;
+  amount: number;
+  percentage: number;
+  province_amount: string;
+  pledge_count: number;
+}
+
 interface CommentProps {
-  comment: any;
+  comment: Comment;
   onLike: (commentId: string, isLike: boolean) => void;
   onEdit: (commentId: string, text: string) => void;
   onDelete: (commentId: string) => void;
-  canModifyComment: (comment: any) => boolean;
+  canModifyComment: (comment: Comment) => boolean;
   getRoleLabel: (role: string) => { text: string; color: string };
   editingCommentId: string | null;
   editingCommentText: string;
@@ -210,10 +268,10 @@ const CommercialBankPledgePage = () => {
   const [additionalPledges, setAdditionalPledges] = useState<AdditionalPledge[]>([]);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [initiative, setInitiative] = useState<any>(null);
-  const [pledgeStats, setPledgeStats] = useState<any>(null);
+  const [initiative, setInitiative] = useState<Initiative | null>(null);
+  const [pledgeStats, setPledgeStats] = useState<PledgeStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [comments, setComments] = useState<any[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
@@ -586,7 +644,7 @@ const CommercialBankPledgePage = () => {
     }
   };
 
-  const canModifyComment = (comment: any) => {
+  const canModifyComment = (comment: Comment) => {
     if (!user) return false;
     // User can modify if they own the comment or if they are admin/staff
     return comment.user_id === user.id || user.userRole === 'admin' || user.userRole === 'staff';
@@ -631,7 +689,7 @@ const CommercialBankPledgePage = () => {
     setAdditionalPledges(additionalPledges.filter(pledge => pledge.id !== id));
   };
 
-  const updateAdditionalPledge = (id: number, field: string, value: any) => {
+  const updateAdditionalPledge = (id: number, field: string, value: string | number) => {
     setAdditionalPledges(additionalPledges.map(pledge => 
       pledge.id === id ? { ...pledge, [field]: value } : pledge
     ));
@@ -953,7 +1011,7 @@ const CommercialBankPledgePage = () => {
               <CardContent>
                 {realProvinceData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={realProvinceData.map((item: any) => ({
+                    <BarChart data={realProvinceData.map((item: ProvinceDataItem) => ({
                       province: item.province.replace('-', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
                       amount: parseFloat(item.province_amount),
                       participants: item.pledge_count

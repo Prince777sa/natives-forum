@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,11 +27,8 @@ import {
   ChevronRight,
   ArrowUpDown,
   Users,
-  DollarSign,
   Calendar,
   MapPin,
-  Filter,
-  Download
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -70,6 +67,11 @@ interface Initiative {
   title: string;
 }
 
+interface InitiativeApiResponse {
+  id: string;
+  title: string;
+}
+
 const PledgeManagement = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -95,25 +97,12 @@ const PledgeManagement = () => {
     'limpopo', 'mpumalanga', 'northern-cape', 'north-west', 'western-cape'
   ];
 
-  useEffect(() => {
-    // Redirect if not authenticated or not admin
-    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
-      router.push('/admin');
-      return;
-    }
-
-    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
-      fetchInitiatives();
-      fetchPledges();
-    }
-  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, selectedInitiative, selectedProvince, sortBy, sortOrder]);
-
   const fetchInitiatives = async () => {
     try {
       const response = await fetch('/api/initiatives');
       if (response.ok) {
         const data = await response.json();
-        setInitiatives(data.initiatives.map((init: any) => ({
+        setInitiatives(data.initiatives.map((init: InitiativeApiResponse) => ({
           id: init.id,
           title: init.title
         })));
@@ -123,7 +112,7 @@ const PledgeManagement = () => {
     }
   };
 
-  const fetchPledges = async () => {
+  const fetchPledges = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -150,7 +139,20 @@ const PledgeManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit, searchTerm, selectedInitiative, selectedProvince, sortBy, sortOrder]);
+
+  useEffect(() => {
+    // Redirect if not authenticated or not admin
+    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
+      router.push('/admin');
+      return;
+    }
+
+    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
+      fetchInitiatives();
+      fetchPledges();
+    }
+  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, selectedInitiative, selectedProvince, sortBy, sortOrder, fetchPledges]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

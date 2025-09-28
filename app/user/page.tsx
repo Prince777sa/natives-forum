@@ -33,6 +33,15 @@ import { useAuth, withAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import Image from 'next/image';
 
+interface ActivityItem {
+  id: string;
+  type: string;
+  action: string;
+  target: string;
+  date: string;
+  relativeDate: string;
+}
+
 const UserDashboard = () => {
   const { user, refreshUser } = useAuth();
   const [currentUser, setCurrentUser] = useState(user);
@@ -55,7 +64,7 @@ const UserDashboard = () => {
     totalRsvps: 0,
     totalLikes: 0
   });
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [provinceStats, setProvinceStats] = useState({
     activeMembers: 0,
     recentVotes: 0,
@@ -141,7 +150,7 @@ const UserDashboard = () => {
   };
 
   // Handle form field changes
-  const handleFormChange = (field: string, value: any) => {
+  const handleFormChange = (field: string, value: string | boolean) => {
     setEditForm(prev => ({ ...prev, [field]: value }));
   };
 

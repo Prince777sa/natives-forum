@@ -13,7 +13,7 @@ export async function GET() {
         FROM users
         WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
       `;
-      const membersResult = await client.query(membersQuery);
+      await client.query(membersQuery);
 
       // Get total initiatives count
       const initiativesQuery = `

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,11 +38,6 @@ interface Comment {
   createdAt: string;
 }
 
-interface RsvpCounts {
-  attending: number;
-  maybe: number;
-  notAttending: number;
-}
 
 const EventsPage = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -53,16 +48,6 @@ const EventsPage = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [userRsvps, setUserRsvps] = useState<{ [key: string]: string | null }>({});
   const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated && events.length > 0) {
-      fetchUserRsvps();
-    }
-  }, [isAuthenticated, events]);
 
   const fetchEvents = async () => {
     try {
@@ -76,7 +61,7 @@ const EventsPage = () => {
     }
   };
 
-  const fetchUserRsvps = async () => {
+  const fetchUserRsvps = useCallback(async () => {
     if (!isAuthenticated) return;
 
     const rsvpPromises = events.map(async (event) => {
@@ -97,7 +82,17 @@ const EventsPage = () => {
     }, {} as { [key: string]: string | null });
 
     setUserRsvps(rsvpsMap);
-  };
+  }, [isAuthenticated, events]);
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated && events.length > 0) {
+      fetchUserRsvps();
+    }
+  }, [isAuthenticated, events, fetchUserRsvps]);
 
   const handleRsvp = async (eventId: string, status: 'attending' | 'not_attending' | 'maybe') => {
     if (!isAuthenticated) {
@@ -265,7 +260,7 @@ const EventsPage = () => {
             Community Events
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Join our community events and connect with fellow members. RSVP to events you're interested in
+            Join our community events and connect with fellow members. RSVP to events you&apos;re interested in
             and participate in discussions about upcoming activities.
           </p>
 
@@ -420,7 +415,7 @@ const EventsPage = () => {
                             disabled={!isAuthenticated}
                           >
                             <XCircle className="h-4 w-4" />
-                            <span>Can't Go</span>
+                            <span>Can&apos;t Go</span>
                           </Button>
                         </div>
                       )}
@@ -439,7 +434,7 @@ const EventsPage = () => {
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                           <DialogHeader>
-                            <DialogTitle>Comments on "{event.title}"</DialogTitle>
+                            <DialogTitle>Comments on &quot;{event.title}&quot;</DialogTitle>
                           </DialogHeader>
 
                           <div className="space-y-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,12 +40,38 @@ import { toast } from 'sonner';
 import Image from 'next/image';
 import VerificationBadge from '@/components/VerificationBadge';
 
+interface Comment {
+  id: string;
+  text: string;
+  author: {
+    name: string;
+    role: string;
+    membershipNumber: string;
+  };
+  created_at: string;
+  likes: number;
+  dislikes: number;
+  hasLiked?: boolean;
+  hasDisliked?: boolean;
+  comment: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  user_role: string;
+  profile_image_url?: string;
+  verification_status?: string;
+  like_count: number;
+  dislike_count: number;
+  user_reaction: boolean | null;
+  updated_at?: string;
+}
+
 interface InitiativeDetail {
   id: string;
   title: string;
   description: string;
   longDescription: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string; }>;
   color: string;
   category: string;
   status: string;
@@ -67,32 +93,18 @@ interface InitiativeDetail {
   nextSteps: string[];
 }
 
-const InitiativeLearnMore = () => {
-  const searchParams = useSearchParams();
-  const initiativeParam = searchParams.get('initiative') || 'commercial-bank';
-  const { user, isAuthenticated } = useAuth();
+// Map initiative string identifiers to database UUIDs
+const initiativeIdMap: { [key: string]: string } = {
+  'commercial-bank': 'e29a2ad1-b1cc-4066-8772-e2dec9654976',
+  // Add other initiative IDs as they are created in the database
+  'spaza-shop': 'spaza-shop-uuid-placeholder',
+  'food-value-chain': 'food-value-chain-uuid-placeholder',
+  'industrial-development': 'industrial-development-uuid-placeholder',
+  'political-representation': 'political-representation-uuid-placeholder'
+};
 
-  const [selectedInitiative, setSelectedInitiative] = useState<InitiativeDetail | null>(null);
-  const [comments, setComments] = useState<any[]>([]);
-  const [newComment, setNewComment] = useState('');
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
-  const [editingCommentText, setEditingCommentText] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
-
-  // Map initiative string identifiers to database UUIDs
-  const initiativeIdMap: { [key: string]: string } = {
-    'commercial-bank': 'e29a2ad1-b1cc-4066-8772-e2dec9654976',
-    // Add other initiative IDs as they are created in the database
-    'spaza-shop': 'spaza-shop-uuid-placeholder',
-    'food-value-chain': 'food-value-chain-uuid-placeholder',
-    'industrial-development': 'industrial-development-uuid-placeholder',
-    'political-representation': 'political-representation-uuid-placeholder'
-  };
-
-  // Detailed initiative data
-  const initiativeDetails: { [key: string]: InitiativeDetail } = {
+// Detailed initiative data
+const initiativeDetails: { [key: string]: InitiativeDetail } = {
     'commercial-bank': {
       id: 'commercial-bank',
       title: 'Commercial Bank Initiative',
@@ -467,18 +479,21 @@ const InitiativeLearnMore = () => {
     }
   };
 
-  useEffect(() => {
-    const initiative = initiativeDetails[initiativeParam];
-    if (initiative) {
-      setSelectedInitiative(initiative);
-      loadComments(initiativeParam);
-    } else {
-      setSelectedInitiative(initiativeDetails['commercial-bank']); // Default fallback
-      loadComments('commercial-bank');
-    }
-  }, [initiativeParam]);
+const InitiativeLearnMore = () => {
+  const searchParams = useSearchParams();
+  const initiativeParam = searchParams.get('initiative') || 'commercial-bank';
+  const { user, isAuthenticated } = useAuth();
 
-  const loadComments = async (initiativeKey: string) => {
+  const [selectedInitiative, setSelectedInitiative] = useState<InitiativeDetail | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+
+  const loadComments = useCallback(async (initiativeKey: string) => {
     const initiativeId = initiativeIdMap[initiativeKey];
     if (!initiativeId || initiativeId.includes('placeholder')) {
       // If no real database ID exists, don't try to load comments
@@ -496,7 +511,18 @@ const InitiativeLearnMore = () => {
       console.error('Failed to load comments:', error);
       setComments([]);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const initiative = initiativeDetails[initiativeParam];
+    if (initiative) {
+      setSelectedInitiative(initiative);
+      loadComments(initiativeParam);
+    } else {
+      setSelectedInitiative(initiativeDetails['commercial-bank']); // Default fallback
+      loadComments('commercial-bank');
+    }
+  }, [initiativeParam, loadComments]);
 
   const handleSubmitComment = async () => {
     if (!isAuthenticated) {
@@ -746,7 +772,7 @@ const InitiativeLearnMore = () => {
     }
   };
 
-  const canModifyComment = (comment: any) => {
+  const canModifyComment = (comment: Comment) => {
     if (!user) return false;
     // User can modify if they own the comment or if they are admin/staff
     return comment.user_id === user.id || user.userRole === 'admin' || user.userRole === 'staff';
@@ -1251,4 +1277,10 @@ const InitiativeLearnMore = () => {
   );
 };
 
-export default InitiativeLearnMore;
+export default function InitiativeLearnMorePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InitiativeLearnMore />
+    </Suspense>
+  );
+}

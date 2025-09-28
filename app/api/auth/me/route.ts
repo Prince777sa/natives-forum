@@ -4,10 +4,14 @@ import jwt from 'jsonwebtoken';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;
@@ -20,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    jwt.verify(token, JWT_SECRET) as JwtPayload;
     
     const client = await pool.connect();
     
@@ -80,7 +84,7 @@ export async function GET(request: NextRequest) {
 }
 
 // app/api/auth/logout/route.ts - Logout endpoint
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAME)?.value;

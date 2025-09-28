@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, ShoppingCart, Wheat, Vote, Users, Target, ArrowRight, Heart, Factory } from 'lucide-react';
+import { Building2, ShoppingCart, Wheat, Vote, ArrowRight, Heart, Factory } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -297,10 +297,10 @@ const InitiativesPage = () => {
             Help shape our collective future by proposing new initiatives that advance native economic empowerment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href='/propose-initiative' size="lg" className="bg-black rounded-none flex text-white hover:bg-gray-800 px-8 py-3">
+            <Link href='/propose-initiative'  className="bg-black rounded-none flex text-white hover:bg-gray-800 px-8 py-3">
               Propose Initiative <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
-            <Link href='/forum' size="lg" variant="outline" className="border-black bg-white rounded-none text-black hover:bg-black hover:text-white px-8 py-3">
+            <Link href='/forum' className="border-black bg-white rounded-none text-black hover:bg-black hover:text-white px-8 py-3">
               Join Discussion
             </Link>
           </div>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GalleryVerticalEnd } from "lucide-react"
+import Link from "next/link";
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -140,7 +140,7 @@ export function SignUpForm({
     }
   };
 
-  const updateFormData = (field: keyof FormData, value: any) => {
+  const updateFormData = (field: keyof FormData, value: string | boolean | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -153,7 +153,7 @@ export function SignUpForm({
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
-            <a
+            <Link
               href="/"
               className="flex flex-col items-center gap-2 font-medium"
             >
@@ -161,13 +161,13 @@ export function SignUpForm({
                 <Image src="/1.png" alt="Natives Forum" width={100} height={100} className="w-22 h-22" />
               </div>
               <span className="sr-only">Natives Forum</span>
-            </a>
+            </Link>
             <h1 className="text-xl font-bold">Welcome to Natives Forum.</h1>
             <div className="text-center text-sm">
               Already have an account?{" "}
-              <a href="/signin" className="underline underline-offset-4">
+              <Link href="/signin" className="underline underline-offset-4">
                 Sign in
-              </a>
+              </Link>
             </div>
           </div>
           

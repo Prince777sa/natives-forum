@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Users, Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -281,46 +281,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-
-// Example: Protected route component
-// components/ProtectedRoute.tsx
-import { withAuth } from '@/contexts/AuthContext';
-
-// Method 1: Using the hook directly
-function MyProtectedComponent() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!isAuthenticated) return <div>Please sign in</div>;
-
-  return (
-    <div>
-      <h1>Welcome, {user?.firstName}!</h1>
-      <p>Your membership: #{user?.membershipNumber}</p>
-      <p>Role: {user?.userRole}</p>
-    </div>
-  );
-}
-
-// Method 2: Using the HOC wrapper
-const MyProtectedComponentWithHOC = withAuth(() => {
-  const { user } = useAuth();
-  
-  return (
-    <div>
-      <h1>Welcome, {user?.firstName}!</h1>
-      <p>Your membership: #{user?.membershipNumber}</p>
-    </div>
-  );
-});
-
-// Example: Conditional rendering based on role
-function AdminPanel() {
-  const { user, isAuthenticated } = useAuth();
-
-  if (!isAuthenticated || user?.userRole !== 'admin') {
-    return <div>Access denied</div>;
-  }
-
-  return <div>Admin content here</div>;
-}

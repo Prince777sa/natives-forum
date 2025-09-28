@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Building2, ShoppingCart, Wheat, Factory, ArrowRight, CircleDollarSign, Users, Target } from 'lucide-react';
+import { Building2, ShoppingCart, Wheat, Factory, ArrowRight, CircleDollarSign } from 'lucide-react';
 import Link from 'next/link';
 
 const ThePlanPage = () => {
@@ -70,7 +69,7 @@ const ThePlanPage = () => {
           </p>
           <div className="bg-white text-black p-6 text-left max-w-2xl mx-auto border border-white">
             <p className="text-gray-800">
-              Here's the simple truth: for us to be economically empowered, money needs to circulate amongst ourselves. Every rand we spend should stay within our community. This is the foundation of our movement.
+              Here&apos;s the simple truth: for us to be economically empowered, money needs to circulate amongst ourselves. Every rand we spend should stay within our community. This is the foundation of our movement.
             </p>
           </div>
         </div>
@@ -156,7 +155,7 @@ const ThePlanPage = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-black mb-4">The Action Steps</h2>
-            <p className="text-lg text-gray-600">Here's exactly how we make this happen</p>
+            <p className="text-lg text-gray-600">Here&apos;s exactly how we make this happen</p>
           </div>
           
           <div className="space-y-8">

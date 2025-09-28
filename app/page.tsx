@@ -2,10 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Typewriter from 'typewriter-effect';
-import { ArrowRight, Users, Building2, ShoppingCart, Wheat, Factory } from 'lucide-react';
+import { ArrowRight, Building2, ShoppingCart, Wheat, Factory } from 'lucide-react';
 import Image from 'next/image';
-import GettyEmbed from '@/components/GettyEmbed'
 import Link from 'next/link';
 
 interface Stats {
@@ -190,10 +188,10 @@ const LandingPage = () => {
             Join thousands of natives building consensus around the policies that will define our economic independence and political representation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href='/signup' size="lg" className="bg-white rounded-none text-orange-600 hover:bg-gray-100 px-8 py-3">
+            <Link href='/signup' className="bg-white rounded-none text-orange-600 hover:bg-gray-100 px-8 py-3">
               Create account
             </Link>
-            <Link href='/forum' size="lg" variant="outline" className="border-white bg-orange-600 rounded-none text-black hover:bg-white hover:text-orange-600 px-8 py-3">
+            <Link href='/forum' className="border-white bg-orange-600 rounded-none text-black hover:bg-white hover:text-orange-600 px-8 py-3">
               Join discussion
             </Link>
           </div>

@@ -1,52 +1,15 @@
 // app/api/admin/initiatives/route.ts - Admin initiative management
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
-
-// Validation schema for initiative updates
-const updateInitiativeSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  content: z.string().optional(),
-  status: z.enum(['draft', 'active', 'closed', 'completed'], {
-    message: 'Status must be draft, active, closed, or completed',
-  }),
-  targetParticipants: z.number().min(1, 'Target participants must be at least 1'),
-  targetAmount: z.number().min(0, 'Target amount must be non-negative'),
-  featured: z.boolean().optional(),
-});
-
-async function verifyAdminAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const decoded = jwt.verify(token, JWT_SECRET) as any;
-  const adminUserId = decoded.userId;
-
-  const client = await pool.connect();
-  try {
-    const adminQuery = `SELECT email FROM users WHERE id = $1`;
-    const adminResult = await client.query(adminQuery, [adminUserId]);
-
-    if (adminResult.rows.length === 0 || adminResult.rows[0].email !== 'admin@nativesforum.org') {
-      throw new Error('Admin access required');
-    }
-
-    return { adminUserId, client };
-  } catch (error) {
-    client.release();
-    throw error;
-  }
-}
 
 // GET - Get all initiatives with pagination for admin
 export async function GET(request: NextRequest) {
@@ -62,7 +25,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const adminUserId = decoded.userId;
 
     const client = await pool.connect();

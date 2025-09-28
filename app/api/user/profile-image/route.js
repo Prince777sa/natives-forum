@@ -1,5 +1,5 @@
 // app/api/user/profile-image/route.js - Profile image upload endpoint
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 import { updateUserProfileImage } from '@/lib/db';

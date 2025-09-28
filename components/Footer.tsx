@@ -1,5 +1,4 @@
 import React from 'react'
-import { ArrowRight, Users, Building2, ShoppingCart, Wheat, Vote } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 

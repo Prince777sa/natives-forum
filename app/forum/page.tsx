@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MessageCircle, User, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { MessageCircle, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';

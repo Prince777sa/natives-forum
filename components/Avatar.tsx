@@ -53,7 +53,7 @@ export function Avatar({
 
         if (uploadIndex !== -1) {
           // Get everything after version number (if exists)
-          let publicIdPart = parts.slice(uploadIndex + 2).join('/');
+          const publicIdPart = parts.slice(uploadIndex + 2).join('/');
           // Remove file extension
           const cleanedPublicId = publicIdPart.replace(/\.[^/.]+$/, '');
           return cleanedPublicId;

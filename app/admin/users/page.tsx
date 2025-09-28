@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -46,7 +45,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
-  Plus,
   UserCheck,
   Mail,
   MapPin,
@@ -112,19 +110,7 @@ const UserManagement = () => {
   const [updating, setUpdating] = useState(false);
   const [updatingVerification, setUpdatingVerification] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Redirect if not authenticated or not admin
-    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
-      router.push('/admin');
-      return;
-    }
-
-    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
-      fetchUsers();
-    }
-  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, sortBy, sortOrder]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -148,7 +134,19 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit, searchTerm, sortBy, sortOrder]);
+
+  useEffect(() => {
+    // Redirect if not authenticated or not admin
+    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
+      router.push('/admin');
+      return;
+    }
+
+    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
+      fetchUsers();
+    }
+  }, [isAuthenticated, user, isLoading, router, pagination.currentPage, searchTerm, sortBy, sortOrder, fetchUsers]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

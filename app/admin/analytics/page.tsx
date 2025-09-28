@@ -1,8 +1,7 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -31,9 +30,6 @@ import {
   MapPin,
   Star,
   ChevronLeft,
-  Download,
-  Filter,
-  Search
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -106,19 +102,7 @@ const PledgeAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30');
 
-  useEffect(() => {
-    // Redirect if not authenticated or not admin
-    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
-      router.push('/admin');
-      return;
-    }
-
-    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
-      fetchAnalytics();
-    }
-  }, [isAuthenticated, user, isLoading, router, timeRange]);
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -137,7 +121,19 @@ const PledgeAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
+
+  useEffect(() => {
+    // Redirect if not authenticated or not admin
+    if (!isLoading && (!isAuthenticated || user?.email !== 'admin@nativesforum.org')) {
+      router.push('/admin');
+      return;
+    }
+
+    if (isAuthenticated && user?.email === 'admin@nativesforum.org') {
+      fetchAnalytics();
+    }
+  }, [isAuthenticated, user, isLoading, router, timeRange, fetchAnalytics]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-ZA', {

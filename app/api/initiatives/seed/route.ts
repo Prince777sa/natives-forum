@@ -150,7 +150,7 @@ export async function POST() {
   } catch (error) {
     console.error('Seed initiatives error:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   }

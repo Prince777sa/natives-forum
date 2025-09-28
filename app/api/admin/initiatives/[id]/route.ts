@@ -5,6 +5,10 @@ import { z } from 'zod';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
 
@@ -29,7 +33,7 @@ async function verifyAdminAuth() {
     throw new Error('Authentication required');
   }
 
-  const decoded = jwt.verify(token, JWT_SECRET) as any;
+  const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
   const adminUserId = decoded.userId;
 
   const client = await pool.connect();
@@ -134,10 +138,10 @@ export async function PUT(
       );
     }
 
-    if (error instanceof jwt.JsonWebTokenError || error.message === 'Authentication required' || error.message === 'Admin access required') {
+    if (error instanceof jwt.JsonWebTokenError || (error as Error).message === 'Authentication required' || (error as Error).message === 'Admin access required') {
       return NextResponse.json(
-        { error: error.message },
-        { status: error.message === 'Authentication required' ? 401 : 403 }
+        { error: (error as Error).message },
+        { status: (error as Error).message === 'Authentication required' ? 401 : 403 }
       );
     }
 
@@ -198,10 +202,10 @@ export async function DELETE(
   } catch (error) {
     console.error('Delete initiative error:', error);
 
-    if (error instanceof jwt.JsonWebTokenError || error.message === 'Authentication required' || error.message === 'Admin access required') {
+    if (error instanceof jwt.JsonWebTokenError || (error as Error).message === 'Authentication required' || (error as Error).message === 'Admin access required') {
       return NextResponse.json(
-        { error: error.message },
-        { status: error.message === 'Authentication required' ? 401 : 403 }
+        { error: (error as Error).message },
+        { status: (error as Error).message === 'Authentication required' ? 401 : 403 }
       );
     }
 

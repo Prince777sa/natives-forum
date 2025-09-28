@@ -4,10 +4,25 @@ import jwt from 'jsonwebtoken';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
+interface QueryResult {
+  rows: Array<{ count: string }>;
+}
+
+interface ActivityRow {
+  activity_type: string;
+  target_title: string;
+  created_at: string;
+  action: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Verify authentication
     const cookieStore = await cookies();
@@ -20,7 +35,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const userId = decoded.userId;
 
     const client = await pool.connect();
@@ -48,11 +63,11 @@ export async function GET(request: NextRequest) {
       ]);
 
       // Extract results from Promise.allSettled, handling failed queries
-      const getCount = (result: any, index: number) => {
+      const getCount = (result: PromiseSettledResult<QueryResult>, index: number) => {
         if (result.status === 'fulfilled') {
-          return parseInt(result.value.rows[0].count) || 0;
+          return parseInt(result.value?.rows[0]?.count || '0') || 0;
         } else {
-          console.log(`Query ${index} failed:`, result.reason?.message || 'Unknown error');
+          console.log(`Query ${index} failed:`, result.reason);
           return 0;
         }
       };
@@ -146,12 +161,12 @@ export async function GET(request: NextRequest) {
         `;
 
         recentActivityResult = await client.query(recentActivityQuery, [userId]);
-      } catch (error: any) {
-        console.log('Recent activity query failed (tables may not exist):', error?.message || 'Unknown error');
+      } catch (error: unknown) {
+        console.log('Recent activity query failed (tables may not exist):', (error as Error)?.message || 'Unknown error');
         recentActivityResult = { rows: [] };
       }
 
-      const recentActivity = recentActivityResult.rows.map(activity => ({
+      const recentActivity = recentActivityResult.rows.map((activity: ActivityRow) => ({
         id: `${activity.activity_type}_${activity.created_at}`,
         type: activity.activity_type,
         action: activity.action,
@@ -188,8 +203,8 @@ export async function GET(request: NextRequest) {
               WHERE u.province = $1 AND pv.created_at > NOW() - INTERVAL '30 days'
             `, [userProvince]);
             recentVotes = parseInt(recentVotesQuery.rows[0].count) || 0;
-          } catch (voteError: any) {
-            console.log('Vote count query failed (poll_votes table may not exist):', voteError?.message || 'Unknown error');
+          } catch (voteError: unknown) {
+            console.log('Vote count query failed (poll_votes table may not exist):', (voteError as Error)?.message || 'Unknown error');
             recentVotes = 0;
           }
 

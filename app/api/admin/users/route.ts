@@ -1,24 +1,15 @@
 // app/api/admin/users/route.ts - Admin user management
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { z } from 'zod';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
-
-// Validation schema for user updates
-const updateUserSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  email: z.string().email('Invalid email format'),
-  province: z.string().min(1, 'Province is required'),
-  sex: z.enum(['male', 'female', 'other'], {
-    message: 'Sex is required',
-  }),
-  userRole: z.string().optional(),
-});
 
 // GET - Get all users with pagination
 export async function GET(request: NextRequest) {
@@ -34,7 +25,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const adminUserId = decoded.userId;
 
     // Verify admin privileges
@@ -65,7 +56,7 @@ export async function GET(request: NextRequest) {
 
       // Build search condition
       let searchCondition = '';
-      let searchParams_array = [];
+      let searchParams_array: string[] = [];
       if (search) {
         searchCondition = `WHERE (first_name ILIKE $1 OR last_name ILIKE $1 OR email ILIKE $1 OR membership_number ILIKE $1)`;
         searchParams_array = [`%${search}%`];

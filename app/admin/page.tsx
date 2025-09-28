@@ -5,9 +5,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Users, TrendingUp, Activity, Lock, CheckCircle, Settings, BarChart } from 'lucide-react';
+import { Shield, Users, TrendingUp, Activity, Lock, CheckCircle, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+interface Initiative {
+  id: string;
+  title: string;
+  currentParticipants?: number;
+  currentAmount?: number;
+}
 
 const AdminDashboard = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -56,7 +63,7 @@ const AdminDashboard = () => {
         // Calculate total pledges and amounts from initiatives
         let totalPledges = 0;
         let totalAmount = 0;
-        initiativesData.initiatives.forEach((init: any) => {
+        initiativesData.initiatives.forEach((init: Initiative) => {
           totalPledges += init.currentParticipants || 0;
           totalAmount += init.currentAmount || 0;
         });

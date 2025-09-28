@@ -81,7 +81,7 @@ const AboutPage = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">From Conversation to Action</h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              We believe in democracy through dialogue, but our ultimate goal is action. Every conversation should lead to concrete steps that improve our communities. Here's how we transform ideas into reality:
+              We believe in democracy through dialogue, but our ultimate goal is action. Every conversation should lead to concrete steps that improve our communities. Here&apos;s how we transform ideas into reality:
             </p>
           </div>
 
@@ -155,7 +155,7 @@ const AboutPage = () => {
             <div className="bg-white border-2 border-black rounded-none p-8 max-w-4xl mx-auto">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Our Action-Oriented Philosophy</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
-                We don't just talk—we act. Every forum discussion has the potential to become a poll, and every poll result can transform into a real-world initiative or community event. This is how we ensure that our conversations lead to meaningful change that advances our people's interests and builds the economic independence we deserve.
+                We don&apos;t just talk—we act. Every forum discussion has the potential to become a poll, and every poll result can transform into a real-world initiative or community event. This is how we ensure that our conversations lead to meaningful change that advances our people&apos;s interests and builds the economic independence we deserve.
               </p>
             </div>
           </div>
@@ -178,7 +178,7 @@ const AboutPage = () => {
                 
                 <div className="bg-orange-50 border-l-4 border-orange-400 p-6 my-8">
                   <p className="text-gray-800 font-medium text-lg mb-0">
-                    While this socio-economic movement is native-centric, we don't envisage a country where all other groups are oppressed or chased away. Our main focus is getting natives to create the life they deserve on their own terms.
+                    While this socio-economic movement is native-centric, we don&apos;t envisage a country where all other groups are oppressed or chased away. Our main focus is getting natives to create the life they deserve on their own terms.
                   </p>
                 </div>
               </div>

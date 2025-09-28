@@ -4,35 +4,13 @@ import jwt from 'jsonwebtoken';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
 
-async function verifyAdminAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
-
-  if (!token) {
-    throw new Error('Authentication required');
-  }
-
-  const decoded = jwt.verify(token, JWT_SECRET) as any;
-  const adminUserId = decoded.userId;
-
-  const client = await pool.connect();
-  try {
-    const adminQuery = `SELECT email FROM users WHERE id = $1`;
-    const adminResult = await client.query(adminQuery, [adminUserId]);
-
-    if (adminResult.rows.length === 0 || adminResult.rows[0].email !== 'admin@nativesforum.org') {
-      throw new Error('Admin access required');
-    }
-
-    return { adminUserId, client };
-  } catch (error) {
-    client.release();
-    throw error;
-  }
-}
 
 // GET - Get all pledges with pagination and filtering
 export async function GET(request: NextRequest) {
@@ -48,7 +26,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const adminUserId = decoded.userId;
 
     const client = await pool.connect();
@@ -77,8 +55,8 @@ export async function GET(request: NextRequest) {
       const offset = (page - 1) * limit;
 
       // Build search conditions
-      let whereConditions = ['1=1'];
-      let queryParams: any[] = [];
+      const whereConditions = ['1=1'];
+      const queryParams: (string | number)[] = [];
       let paramCount = 0;
 
       if (search) {

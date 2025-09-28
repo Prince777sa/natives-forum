@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -84,14 +83,7 @@ export default function ForumPostPage() {
 
   const { isAuthenticated, user } = useAuth();
 
-  useEffect(() => {
-    if (postId) {
-      fetchPost();
-      fetchComments();
-    }
-  }, [postId]);
-
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
       const response = await fetch(`/api/forum/${postId}`);
       if (response.ok) {
@@ -109,9 +101,9 @@ export default function ForumPostPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [postId, router]);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/forum/${postId}/comments`);
       if (response.ok) {
@@ -121,7 +113,14 @@ export default function ForumPostPage() {
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
-  };
+  }, [postId]);
+
+  useEffect(() => {
+    if (postId) {
+      fetchPost();
+      fetchComments();
+    }
+  }, [postId, fetchPost, fetchComments]);
 
   const handleLikeDislike = async (isLike: boolean) => {
     if (!isAuthenticated || !post) {

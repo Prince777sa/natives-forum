@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 const LeadershipPage = () => {
   return (
@@ -59,7 +59,7 @@ const LeadershipPage = () => {
 
                   {/* Name and Title */}
                   <h4 className="text-xl font-bold text-gray-900 mb-2">Zukisa Sogoni</h4>
-                  <p className="text-blue-600 font-medium mb-4">Founder & Leader</p>
+                  <p className="text-blue-600 font-medium mb-4">Founder</p>
 
                   {/* Location */}
                   <div className="flex items-center justify-center gap-2 mb-6 text-gray-600">
@@ -70,14 +70,7 @@ const LeadershipPage = () => {
                   {/* Bio */}
                   <div className="text-gray-600 mb-6 text-left">
                     <p className="mb-4">
-                      Zukisa Sogoni is the visionary founder of NativesForum, dedicated to creating
-                      a platform for democratic participation and community-driven policy development
-                      for native empowerment.
-                    </p>
-                    <p>
-                      Based in Cape Town, Zukisa brings together communities to build consensus
-                      on critical issues affecting native populations through innovative digital
-                      engagement and grassroots organizing.
+                      Alone, we each feel afraid, disconnected, and exhausted by the way things are. But united, we can envision the South Africa we desire and work purposefully to build it.
                     </p>
                   </div>
 
@@ -89,8 +82,7 @@ const LeadershipPage = () => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-none hover:bg-gray-50 transition-colors"
                     >
-                      <Twitter className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm text-gray-700">Twitter</span>
+                      <span className="text-sm text-gray-700">🐦 Twitter</span>
                     </a>
                     <a
                       href="https://instagram.com/tazuks_sa"
@@ -98,8 +90,7 @@ const LeadershipPage = () => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-none hover:bg-gray-50 transition-colors"
                     >
-                      <Instagram className="h-4 w-4 text-pink-500" />
-                      <span className="text-sm text-gray-700">Instagram</span>
+                      <span className="text-sm text-gray-700">📷 Instagram</span>
                     </a>
                     <a
                       href="https://www.linkedin.com/in/zukisa-sogoni-56b44346/"
@@ -107,8 +98,7 @@ const LeadershipPage = () => {
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-none hover:bg-gray-50 transition-colors"
                     >
-                      <Linkedin className="h-4 w-4 text-blue-700" />
-                      <span className="text-sm text-gray-700">LinkedIn</span>
+                      <span className="text-sm text-gray-700">💼 LinkedIn</span>
                     </a>
                   </div>
                 </div>
@@ -123,8 +113,8 @@ const LeadershipPage = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Growing Our Team</h3>
             <p className="text-gray-600">
               We are continuously building our leadership team with individuals who share our
-              commitment to native empowerment and democratic participation. If you're passionate
-              about making a difference in your community, we'd love to hear from you.
+              commitment to native empowerment and democratic participation. If you&apos;re passionate
+              about making a difference in your community, we&apos;d love to hear from you.
             </p>
           </div>
         </div>

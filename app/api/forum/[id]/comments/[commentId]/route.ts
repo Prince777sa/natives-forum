@@ -5,6 +5,10 @@ import { z } from 'zod';
 import { pool } from '@/lib/db';
 import { cookies } from 'next/headers';
 
+interface JwtPayload {
+  userId: string;
+}
+
 const JWT_SECRET = process.env.JWT_SECRET!;
 const COOKIE_NAME = 'auth-token';
 
@@ -30,7 +34,7 @@ export async function PUT(
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const userId = decoded.userId;
     const resolvedParams = await params;
     const { id: forumPostId, commentId } = resolvedParams;
@@ -143,7 +147,7 @@ export async function DELETE(
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const userId = decoded.userId;
     const resolvedParams = await params;
     const { id: forumPostId, commentId } = resolvedParams;
