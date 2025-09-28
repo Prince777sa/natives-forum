@@ -34,7 +34,7 @@ const AboutPage = () => {
                   The ANC has done little to challenge the apartheid economy. They have been more interested in buying shares and holding board memberships in these companies than engineering socio-economics that breaks this dependency.
                 </p>
                 <p className="mb-6">
-                  This has left natives at the mercy of the predatory apartheid economy while also having to compete in the informal economy with the influx of foreigners who bring no scarce skills but extract profits from our communities and send them back to their countries as remittances.
+                  This has left natives at the mercy of the predatory apartheid economy while also having to compete in the informal economy with the influx of outsiders who bring no scarce skills but extract profits from our communities and send them back to their countries as remittances.
                 </p>
                 <p className="font-semibold text-gray-900">
                   This platform aims to unite us around key actions that we need to take. It is impossible for us to survive if we continue thinking as individuals.
@@ -152,7 +152,7 @@ const AboutPage = () => {
           </div>
 
           <div className="mt-12 text-center">
-            <div className="bg-white border-2 border-black rounded-none p-8 max-w-4xl mx-auto">
+            <div className="bg-white border-1 border-black rounded-none p-8 max-w-4xl mx-auto">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Our Action-Oriented Philosophy</h3>
               <p className="text-gray-600 text-lg leading-relaxed">
                 We don&apos;t just talk—we act. Every forum discussion has the potential to become a poll, and every poll result can transform into a real-world initiative or community event. This is how we ensure that our conversations lead to meaningful change that advances our people&apos;s interests and builds the economic independence we deserve.

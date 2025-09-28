@@ -146,10 +146,23 @@ export async function GET(
   try {
     const resolvedParams = await params;
     const forumPostId = resolvedParams.id;
+
+    // Get user ID from token for reaction status
+    let currentUserId: string | null = null;
+    const token = request.cookies.get('auth-token')?.value;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        currentUserId = decoded.userId;
+      } catch (error) {
+        // Invalid token, continue without user ID
+      }
+    }
+
     const client = await pool.connect();
 
     try {
-      // Get comments with user information
+      // Get comments with user information and like/dislike counts
       const commentsQuery = `
         SELECT
           c.id,
@@ -161,19 +174,34 @@ export async function GET(
           u.membership_number,
           u.user_role,
           u.profile_image_url,
-          u.verification_status
+          u.verification_status,
+          COALESCE(like_counts.like_count, 0) as like_count,
+          COALESCE(like_counts.dislike_count, 0) as dislike_count,
+          user_reaction.is_like as user_reaction
         FROM forum_post_comments c
         INNER JOIN users u ON c.user_id = u.id
+        LEFT JOIN (
+          SELECT
+            comment_id,
+            COUNT(CASE WHEN is_like = true THEN 1 END) as like_count,
+            COUNT(CASE WHEN is_like = false THEN 1 END) as dislike_count
+          FROM forum_comment_likes
+          GROUP BY comment_id
+        ) like_counts ON c.id = like_counts.comment_id
+        LEFT JOIN forum_comment_likes user_reaction ON c.id = user_reaction.comment_id AND user_reaction.user_id = $2
         WHERE c.post_id = $1 AND c.is_active = true
         ORDER BY c.created_at DESC
       `;
 
-      const result = await client.query(commentsQuery, [forumPostId]);
+      const result = await client.query(commentsQuery, [forumPostId, currentUserId]);
 
       const comments = result.rows.map(comment => ({
         id: comment.id,
         content: comment.content,
         createdAt: comment.created_at,
+        likeCount: parseInt(comment.like_count) || 0,
+        dislikeCount: parseInt(comment.dislike_count) || 0,
+        userReaction: comment.user_reaction,
         author: {
           id: comment.author_id,
           name: `${comment.first_name} ${comment.last_name}`,

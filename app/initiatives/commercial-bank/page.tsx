@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Building2, Plus, Trash2, Users, MapPin, Target, LogIn, Info, MessageCircle, Send, ThumbsUp, ThumbsDown, MoreVertical, Edit, X, Check } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -276,6 +277,8 @@ const CommercialBankPledgePage = () => {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
   // Commercial Bank Initiative ID
   const COMMERCIAL_BANK_ID = 'e29a2ad1-b1cc-4066-8772-e2dec9654976';
@@ -603,13 +606,16 @@ const CommercialBankPledgePage = () => {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    if (!confirm('Are you sure you want to delete this comment?')) {
-      return;
-    }
+  const handleDeleteComment = (commentId: string) => {
+    setCommentToDelete(commentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
 
     try {
-      const response = await fetch(`/api/initiatives/comments/${commentId}`, {
+      const response = await fetch(`/api/initiatives/comments/${commentToDelete}`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -617,7 +623,7 @@ const CommercialBankPledgePage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        setComments(comments.filter(comment => comment.id !== commentId));
+        setComments(comments.filter(comment => comment.id !== commentToDelete));
         toast.success('Comment deleted successfully!');
       } else {
         toast.error(result.error || 'Failed to delete comment');
@@ -625,6 +631,9 @@ const CommercialBankPledgePage = () => {
     } catch (error) {
       console.error('Delete comment error:', error);
       toast.error('Network error. Please try again.');
+    } finally {
+      setDeleteDialogOpen(false);
+      setCommentToDelete(null);
     }
   };
 
@@ -1229,6 +1238,34 @@ const CommercialBankPledgePage = () => {
             </CardContent>
           </Card>
         </section>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent className="rounded-none">
+            <DialogHeader>
+              <DialogTitle>Delete Comment</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this comment? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDialogOpen(false)}
+                className="rounded-none"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteComment}
+                className="rounded-none"
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

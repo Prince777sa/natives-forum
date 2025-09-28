@@ -42,6 +42,9 @@ interface Comment {
   id: string;
   content: string;
   createdAt: string;
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: boolean | null;
   author: {
     id: string;
     name: string;
@@ -319,6 +322,111 @@ export default function ForumPostPage() {
       toast.error('Failed to delete comment');
     } finally {
       setDeletingCommentId(null);
+    }
+  };
+
+  const handleCommentLikeDislike = async (commentId: string, isLike: boolean) => {
+    if (!isAuthenticated) {
+      toast.error('Please sign in to react to comments');
+      return;
+    }
+
+    // Find the current comment to calculate optimistic updates
+    const currentComment = comments.find(c => c.id === commentId);
+    if (!currentComment) return;
+
+    // Calculate optimistic state changes
+    let newLikeCount = currentComment.likeCount || 0;
+    let newDislikeCount = currentComment.dislikeCount || 0;
+    let newUserReaction: boolean | null = isLike;
+    let action = 'added';
+
+    if (currentComment.userReaction === isLike) {
+      // Same reaction - remove it (toggle off)
+      newUserReaction = null;
+      if (isLike) {
+        newLikeCount = Math.max(0, newLikeCount - 1);
+      } else {
+        newDislikeCount = Math.max(0, newDislikeCount - 1);
+      }
+      action = 'removed';
+    } else if (currentComment.userReaction !== null && currentComment.userReaction !== isLike) {
+      // Different reaction - update it
+      if (isLike) {
+        newLikeCount += 1;
+        newDislikeCount = Math.max(0, newDislikeCount - 1);
+      } else {
+        newDislikeCount += 1;
+        newLikeCount = Math.max(0, newLikeCount - 1);
+      }
+      action = 'updated';
+    } else {
+      // No existing reaction - add new one
+      if (isLike) {
+        newLikeCount += 1;
+      } else {
+        newDislikeCount += 1;
+      }
+      action = 'added';
+    }
+
+    // Optimistically update the UI immediately
+    const optimisticComments = comments.map(comment =>
+      comment.id === commentId
+        ? {
+            ...comment,
+            likeCount: newLikeCount,
+            dislikeCount: newDislikeCount,
+            userReaction: newUserReaction
+          }
+        : comment
+    );
+    setComments(optimisticComments);
+
+    // Show immediate feedback
+    if (action === 'added') {
+      toast.success(isLike ? 'Comment liked!' : 'Comment disliked!');
+    } else if (action === 'updated') {
+      toast.success(isLike ? 'Changed to like' : 'Changed to dislike');
+    } else if (action === 'removed') {
+      toast.success('Reaction removed');
+    }
+
+    try {
+      // Send API request in the background
+      const response = await fetch(`/api/forum/${postId}/comments/${commentId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ isLike }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Update with server response to ensure consistency
+        setComments(comments.map(comment =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                likeCount: result.likeCount,
+                dislikeCount: result.dislikeCount,
+                userReaction: result.userReaction
+              }
+            : comment
+        ));
+      } else {
+        // Revert optimistic update on error
+        setComments(comments);
+        toast.error(result.error || 'Failed to react to comment');
+      }
+    } catch (error) {
+      // Revert optimistic update on network error
+      setComments(comments);
+      console.error('Like comment error:', error);
+      toast.error('Network error. Please try again.');
     }
   };
 
@@ -617,9 +725,40 @@ export default function ForumPostPage() {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {comment.content}
-                        </p>
+                        <div className="space-y-3">
+                          <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {comment.content}
+                          </p>
+
+                          {/* Like/Dislike Buttons */}
+                          <div className="flex items-center gap-4">
+                            <button
+                              onClick={() => handleCommentLikeDislike(comment.id, true)}
+                              disabled={!isAuthenticated}
+                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                comment.userReaction === true
+                                  ? 'bg-green-100 text-green-700 border border-green-300'
+                                  : 'text-gray-500 hover:text-green-600 hover:bg-green-50'
+                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            >
+                              <ThumbsUp className="h-3 w-3" />
+                              <span>{comment.likeCount || 0}</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleCommentLikeDislike(comment.id, false)}
+                              disabled={!isAuthenticated}
+                              className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
+                                comment.userReaction === false
+                                  ? 'bg-red-100 text-red-700 border border-red-300'
+                                  : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                              } ${!isAuthenticated ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            >
+                              <ThumbsDown className="h-3 w-3" />
+                              <span>{comment.dislikeCount || 0}</span>
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </CardContent>
