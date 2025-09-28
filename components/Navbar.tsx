@@ -142,12 +142,12 @@ const Navbar = () => {
             ) : (
               <>
                 <Link href="/signin">
-                  <Button variant="outline" className="border-black text-black hover:bg-black hover:text-white">
+                  <Button variant="outline" className="border-black text-black hover:bg-black hover:text-white rounded-none">
                     Sign In
                   </Button>
                 </Link>
                 <Link href="/signup">
-                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white rounded-none">
                     Join Forum
                   </Button>
                 </Link>
@@ -254,7 +254,7 @@ const Navbar = () => {
                       <Link href="/signin">
                         <Button 
                           variant="outline" 
-                          className="w-full border-black text-black hover:bg-black hover:text-white"
+                          className="w-full border-black text-black hover:bg-black hover:text-white rounded-none"
                           onClick={() => setIsOpen(false)}
                         >
                           Sign In
@@ -262,7 +262,7 @@ const Navbar = () => {
                       </Link>
                       <Link href="/signup">
                         <Button 
-                          className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                          className="w-full bg-orange-600 hover:bg-orange-700 text-white rounded-none"
                           onClick={() => setIsOpen(false)}
                         >
                           Join Forum
