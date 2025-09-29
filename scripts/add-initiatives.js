@@ -34,7 +34,7 @@ async function addInitiatives() {
     const initiativesToAdd = [
       {
         title: "Spaza Shop Network",
-        description: "Reclaim the informal economy by creating a network of native-owned spaza shops. Support local entrepreneurs and keep money circulating in our communities.",
+        description: "Reclaim the informal economy by creating a network of native-owned businesses. Support local entrepreneurs and keep money circulating in our communities.",
         content: "The Spaza Shop Network initiative aims to transform South Africa's informal economy by establishing a comprehensive network of native-owned spaza shops. This program will provide training, mentorship, and financial support to new spaza shop owners while integrating modern payment systems and connecting to our banking infrastructure. Through this initiative, we will create sustainable livelihoods, keep money circulating within our communities, and build economic resilience from the ground up.",
         status: "planning",
         categoryName: "Informal Economy",

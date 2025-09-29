@@ -55,9 +55,9 @@ export async function POST() {
       // Define the initiatives to add with proper categories
       const initiativesToAdd = [
         {
-          title: "Spaza Shop Network",
-          description: "Reclaim the informal economy by creating a network of native-owned spaza shops. Support local entrepreneurs and keep money circulating in our communities.",
-          content: "The Spaza Shop Network initiative aims to transform South Africa's informal economy by establishing a comprehensive network of native-owned spaza shops.",
+          title: "Informal Economy",
+          description: "Reclaim the informal economy by creating a network of native-owned businesses. Support local entrepreneurs and keep money circulating in our communities.",
+          content: "The Informal Economy initiative aims to transform South Africa's informal economy by establishing a comprehensive network of native-owned businesses.",
           categoryId: getCategoryId('informal-economy', 'Informal Economy'),
           targetParticipants: 2000,
           targetAmount: 50000000

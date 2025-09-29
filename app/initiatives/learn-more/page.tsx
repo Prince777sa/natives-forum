@@ -194,7 +194,7 @@ const initiativeDetails: { [key: string]: InitiativeDetail } = {
       status: 'Planning',
       targetParticipants: 2000,
 
-      overview: 'The informal economy is the economic backbone of our communities, yet many are now owned by foreign nationals. This initiative aims to support native entrepreneurs in establishing and running successful businesses, creating a network of community-owned businesses.',
+      overview: 'The informal economy is the economic backbone of our communities, yet many of these businesses are now owned by foreign nationals. This initiative aims to support native entrepreneurs in establishing and running successful businesses, creating a network of community-owned businesses.',
 
       objectives: [
         'Support 2000 new native-owned businesses',
