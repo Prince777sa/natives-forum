@@ -43,8 +43,20 @@ const Footer = () => {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t  border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <div className='flex justify-center mb-4 space-x-3 items-center'>
+               <Link href="/" className="flex-shrink-0 flex items-center">
+              <Image
+                src="/south_africa.png"
+                alt="Community Forum Logo"
+                width={80}
+                height={40}
+                className="h-8 w-auto"
+              />
+            </Link>
             <p>&copy; {new Date().getFullYear()} NativesForum. All rights reserved</p>
+            </div>
+           
           </div>
         </div>
       </footer>

@@ -140,7 +140,7 @@ const getWelcomeEmailHTML = (data: WelcomeEmailData) => {
           
           <p>Your voice matters. Your participation shapes our collective future. Together, we can create the change our communities deserve.</p>
           
-          <p style="font-weight: bold;">Ngiyabonga for joining us on this journey!</p>
+          <p style="font-weight: bold;">Realeboga for joining us on this journey!</p>
         </div>
         
         <div class="footer">
