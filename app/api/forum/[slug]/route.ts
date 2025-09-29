@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import jwt from 'jsonwebtoken';
 
-// GET /api/forum/[id] - Get a single forum post
+// GET /api/forum/[slug] - Get a single forum post by slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const { id: postId } = resolvedParams;
+    const { slug } = resolvedParams;
 
     // Get user ID from token for user-specific reactions (if authenticated)
     let currentUserId = null;
@@ -62,10 +62,10 @@ export async function GET(
           FROM forum_post_likes
           WHERE user_id = $1
         ) user_reaction ON fp.id = user_reaction.post_id
-        WHERE fp.id = $2 AND fp.is_active = true AND u.is_active = true
+        WHERE fp.slug = $2 AND fp.is_active = true AND u.is_active = true
       `;
 
-      const result = await client.query(forumQuery, [currentUserId, postId]);
+      const result = await client.query(forumQuery, [currentUserId, slug]);
 
       if (result.rows.length === 0) {
         return NextResponse.json(
@@ -79,6 +79,7 @@ export async function GET(
       // Format the response
       const forumPost = {
         id: post.id,
+        slug: post.slug,
         title: post.title,
         content: post.content,
         excerpt: post.excerpt,
@@ -117,10 +118,10 @@ export async function GET(
   }
 }
 
-// PUT /api/forum/[id] - Update a forum post
+// PUT /api/forum/[slug] - Update a forum post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     // Get user from JWT token
@@ -144,7 +145,7 @@ export async function PUT(
     }
 
     const resolvedParams = await params;
-    const { id: postId } = resolvedParams;
+    const { slug } = resolvedParams;
     const { title, content } = await request.json();
 
     // Validate required fields
@@ -174,12 +175,12 @@ export async function PUT(
     try {
       // Check if the post exists and if the user is the author or admin
       const checkQuery = `
-        SELECT fp.author_id, u.user_role
+        SELECT fp.author_id, u.user_role, fp.id
         FROM forum_posts fp
         LEFT JOIN users u ON u.id = $2
-        WHERE fp.id = $1 AND fp.is_active = true
+        WHERE fp.slug = $1 AND fp.is_active = true
       `;
-      const checkResult = await client.query(checkQuery, [postId, userId]);
+      const checkResult = await client.query(checkQuery, [slug, userId]);
 
       if (checkResult.rows.length === 0) {
         return NextResponse.json(
@@ -188,7 +189,7 @@ export async function PUT(
         );
       }
 
-      const { author_id, user_role } = checkResult.rows[0];
+      const { author_id, user_role, id: actualPostId } = checkResult.rows[0];
 
       // Check if user is the author or admin
       if (author_id !== userId && user_role !== 'admin') {
@@ -209,7 +210,7 @@ export async function PUT(
       const result = await client.query(updateQuery, [
         title.trim(),
         content.trim(),
-        postId
+        actualPostId
       ]);
 
       const updatedPost = result.rows[0];
@@ -237,10 +238,10 @@ export async function PUT(
   }
 }
 
-// DELETE /api/forum/[id] - Delete a forum post
+// DELETE /api/forum/[slug] - Delete a forum post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     // Get user from JWT token
@@ -264,18 +265,18 @@ export async function DELETE(
     }
 
     const resolvedParams = await params;
-    const { id: postId } = resolvedParams;
+    const { slug } = resolvedParams;
     const client = await pool.connect();
 
     try {
       // Check if the post exists and if the user is the author or admin
       const checkQuery = `
-        SELECT fp.author_id, u.user_role
+        SELECT fp.author_id, u.user_role, fp.id
         FROM forum_posts fp
         LEFT JOIN users u ON u.id = $2
-        WHERE fp.id = $1 AND fp.is_active = true
+        WHERE fp.slug = $1 AND fp.is_active = true
       `;
-      const checkResult = await client.query(checkQuery, [postId, userId]);
+      const checkResult = await client.query(checkQuery, [slug, userId]);
 
       if (checkResult.rows.length === 0) {
         return NextResponse.json(
@@ -284,7 +285,7 @@ export async function DELETE(
         );
       }
 
-      const { author_id, user_role } = checkResult.rows[0];
+      const { author_id, user_role, id: actualPostId } = checkResult.rows[0];
 
       // Check if user is the author or admin
       if (author_id !== userId && user_role !== 'admin') {
@@ -302,7 +303,7 @@ export async function DELETE(
         RETURNING id
       `;
 
-      const result = await client.query(deleteQuery, [postId]);
+      const result = await client.query(deleteQuery, [actualPostId]);
 
       if (result.rows.length === 0) {
         return NextResponse.json(

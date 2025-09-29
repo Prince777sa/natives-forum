@@ -1,16 +1,14 @@
-// app/api/forum/[id]/comments/route.ts - Handle forum post comments
+// app/api/forum/[slug]/comments/route.ts - Handle forum post comments by slug
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 import { pool } from '@/lib/db';
-import { cookies } from 'next/headers';
 
 interface JwtPayload {
   userId: string;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const COOKIE_NAME = 'auth-token';
 
 // Validation schema for comment submission
 const commentSchema = z.object({
@@ -20,12 +18,11 @@ const commentSchema = z.object({
 // POST - Submit a comment
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     // Verify authentication
-    const cookieStore = await cookies();
-    const token = cookieStore.get(COOKIE_NAME)?.value;
+    const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -37,7 +34,7 @@ export async function POST(
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     const userId = decoded.userId;
     const resolvedParams = await params;
-    const forumPostId = resolvedParams.id;
+    const { slug } = resolvedParams;
 
     // Parse and validate request body
     const body = await request.json();
@@ -46,53 +43,71 @@ export async function POST(
     const client = await pool.connect();
 
     try {
-      // Check if forum post exists and is active
+      // Check if forum post exists and is active, get ID
       const forumQuery = `
-        SELECT id, title
+        SELECT id, title, author_id
         FROM forum_posts
-        WHERE id = $1 AND is_active = true
+        WHERE slug = $1 AND is_active = true
       `;
-      const forumResult = await client.query(forumQuery, [forumPostId]);
+      const forumResult = await client.query(forumQuery, [slug]);
 
       if (forumResult.rows.length === 0) {
         return NextResponse.json(
-          { error: 'Forum post not found or not active' },
+          { error: 'Forum post not found' },
           { status: 404 }
         );
       }
 
+      const forumPostId = forumResult.rows[0].id;
+
       // Insert the comment
-      const insertCommentQuery = `
-        INSERT INTO forum_post_comments (post_id, user_id, comment, created_at)
-        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-        RETURNING id, comment, created_at
+      const insertQuery = `
+        INSERT INTO forum_post_comments (
+          post_id,
+          user_id,
+          comment,
+          created_at
+        )
+        VALUES ($1, $2, $3, NOW())
+        RETURNING id, comment as content, created_at
       `;
 
-      const commentResult = await client.query(insertCommentQuery, [
+      const result = await client.query(insertQuery, [
         forumPostId,
         userId,
-        validatedData.content
+        validatedData.content,
       ]);
 
-      const newComment = commentResult.rows[0];
+      const newComment = result.rows[0];
 
-      // Get user info for the response
+      // Get user details for the response
       const userQuery = `
-        SELECT first_name, last_name, membership_number, user_role, profile_image_url, verification_status
+        SELECT
+          id,
+          first_name,
+          last_name,
+          membership_number,
+          user_role,
+          profile_image_url,
+          verification_status
         FROM users
         WHERE id = $1
       `;
       const userResult = await client.query(userQuery, [userId]);
       const user = userResult.rows[0];
 
+      // Return the created comment with user details
       return NextResponse.json({
-        message: 'Comment submitted successfully',
+        success: true,
         comment: {
           id: newComment.id,
-          content: newComment.comment,
+          content: newComment.content,
           createdAt: newComment.created_at,
+          likeCount: 0,
+          dislikeCount: 0,
+          userReaction: null,
           author: {
-            id: userId,
+            id: user.id,
             name: `${user.first_name} ${user.last_name}`,
             firstName: user.first_name,
             lastName: user.last_name,
@@ -113,13 +128,7 @@ export async function POST(
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.issues.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
-        },
+        { error: error.issues[0].message },
         { status: 400 }
       );
     }
@@ -138,36 +147,52 @@ export async function POST(
   }
 }
 
-// GET - Get comments for a forum post
+// GET - Retrieve comments for a forum post
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const forumPostId = resolvedParams.id;
+    const { slug } = resolvedParams;
 
-    // Get user ID from token for reaction status
-    let currentUserId: string | null = null;
+    // Get user ID for personalized reactions (optional)
+    let currentUserId = null;
     const token = request.cookies.get('auth-token')?.value;
     if (token) {
       try {
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
         currentUserId = decoded.userId;
-      } catch (error) {
-        // Invalid token, continue without user ID
+      } catch {
+        // Invalid token, continue without user data
       }
     }
 
     const client = await pool.connect();
 
     try {
-      // Get comments with user information and like/dislike counts
+      // First check if forum post exists
+      const postQuery = `
+        SELECT id FROM forum_posts
+        WHERE slug = $1 AND is_active = true
+      `;
+      const postResult = await client.query(postQuery, [slug]);
+
+      if (postResult.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Forum post not found' },
+          { status: 404 }
+        );
+      }
+
+      const forumPostId = postResult.rows[0].id;
+
+      // Get all comments with user details and reaction counts
       const commentsQuery = `
         SELECT
-          c.id,
-          c.comment as content,
-          c.created_at,
+          fpc.id,
+          fpc.comment as content,
+          fpc.created_at,
           u.id as author_id,
           u.first_name,
           u.last_name,
@@ -178,8 +203,8 @@ export async function GET(
           COALESCE(like_counts.like_count, 0) as like_count,
           COALESCE(like_counts.dislike_count, 0) as dislike_count,
           user_reaction.is_like as user_reaction
-        FROM forum_post_comments c
-        INNER JOIN users u ON c.user_id = u.id
+        FROM forum_post_comments fpc
+        LEFT JOIN users u ON fpc.user_id = u.id
         LEFT JOIN (
           SELECT
             comment_id,
@@ -187,10 +212,14 @@ export async function GET(
             COUNT(CASE WHEN is_like = false THEN 1 END) as dislike_count
           FROM forum_comment_likes
           GROUP BY comment_id
-        ) like_counts ON c.id = like_counts.comment_id
-        LEFT JOIN forum_comment_likes user_reaction ON c.id = user_reaction.comment_id AND user_reaction.user_id = $2
-        WHERE c.post_id = $1 AND c.is_active = true
-        ORDER BY c.created_at DESC
+        ) like_counts ON fpc.id = like_counts.comment_id
+        LEFT JOIN (
+          SELECT comment_id, is_like
+          FROM forum_comment_likes
+          WHERE user_id = $2
+        ) user_reaction ON fpc.id = user_reaction.comment_id
+        WHERE fpc.post_id = $1 AND fpc.is_active = true AND u.is_active = true
+        ORDER BY fpc.created_at DESC
       `;
 
       const result = await client.query(commentsQuery, [forumPostId, currentUserId]);

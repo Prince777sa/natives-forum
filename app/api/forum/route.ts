@@ -1,6 +1,7 @@
 // app/api/forum/route.ts - Get all forum posts and create new ones
 import { NextRequest, NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { generateSlug } from '@/lib/utils';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
@@ -65,6 +66,7 @@ export async function GET(request: NextRequest) {
       // Format the response
       const forumPosts = result.rows.map(post => ({
         id: post.id,
+        slug: post.slug,
         title: post.title,
         content: post.content,
         excerpt: post.excerpt,
@@ -155,18 +157,44 @@ export async function POST(request: NextRequest) {
     const client = await pool.connect();
 
     try {
-      // Insert new forum post
+      // Generate slug from title
+      let baseSlug = generateSlug(title);
+      if (!baseSlug) {
+        baseSlug = `post-${Date.now()}`;
+      }
+
+      // Check for existing slugs and make unique if necessary
+      let finalSlug = baseSlug;
+      let counter = 1;
+      let slugExists = true;
+
+      while (slugExists) {
+        const slugCheckResult = await client.query(
+          'SELECT id FROM forum_posts WHERE slug = $1',
+          [finalSlug]
+        );
+
+        if (slugCheckResult.rows.length === 0) {
+          slugExists = false;
+        } else {
+          finalSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+      }
+
+      // Insert new forum post with slug
       const insertQuery = `
         INSERT INTO forum_posts (
-          title, content, author_id, created_at, updated_at
+          title, content, slug, author_id, created_at, updated_at
         )
-        VALUES ($1, $2, $3, NOW(), NOW())
-        RETURNING id, title, content, created_at, updated_at
+        VALUES ($1, $2, $3, $4, NOW(), NOW())
+        RETURNING id, title, content, slug, created_at, updated_at
       `;
 
       const result = await client.query(insertQuery, [
         title.trim(),
         content.trim(),
+        finalSlug,
         userId
       ]);
 
@@ -185,6 +213,7 @@ export async function POST(request: NextRequest) {
         success: true,
         post: {
           id: newPost.id,
+          slug: newPost.slug,
           title: newPost.title,
           content: newPost.content,
           excerpt: content.length > 300 ? content.substring(0, 300) + '...' : content,

@@ -277,7 +277,7 @@ const InitiativesPage = () => {
                           Get Notified <Heart className="ml-2 h-4 w-4" />
                         </Button>
                       )}
-                      <Link href={`/initiatives/learn-more?initiative=${initiative.title.includes('Bank') ? 'commercial-bank' : initiative.title.includes('Spaza') ? 'spaza-shop' : initiative.title.includes('Food') ? 'food-value-chain' : initiative.title.includes('Industrial') ? 'industrial-development' : 'political-representation'}`}>
+                      <Link href={`/initiatives/learn-more?initiative=${initiative.title.includes('Bank') ? 'commercial-bank' : initiative.title.includes('Spaza') || initiative.title.includes('Informal') ? 'spaza-shop' : initiative.title.includes('Food') ? 'food-value-chain' : initiative.title.includes('Industrial') ? 'industrial-development' : 'political-representation'}`}>
                         <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
                           Learn More
                         </Button>

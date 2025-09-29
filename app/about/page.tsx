@@ -31,10 +31,10 @@ const AboutPage = () => {
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
               <div className="prose prose-lg text-gray-600">
                 <p className="mb-6">
-                  The ANC has done little to challenge the apartheid economy. They have been more interested in buying shares and holding board memberships in these companies than engineering socio-economics that breaks this dependency.
+                  The global economic order thrives on extracting wealth from the developing world, with Africa bearing the heaviest burden. South Africa's colonial and apartheid-era economic structures remain largely intact, designed to maintain the marginalization of indigenous South Africans. Despite promises of transformation, the ANC has failed to dismantle these systems, leaving the fundamental economic architecture unchanged. Native South Africans now face a web of oppression: government corruption, an economy still shaped by apartheid priorities, and international systems that continue to treat Africa as merely a source of raw materials.
                 </p>
                 <p className="mb-6">
-                  This has left natives at the mercy of the predatory apartheid economy while also having to compete in the informal economy with the influx of outsiders who bring no scarce skills but extract profits from our communities and send them back to their countries as remittances.
+                  These systemic failures demand that we forge our own path forward. This platform creates a space where we can unite around a shared vision through a deliberate process: first, exchanging ideas and perspectives; second, analyzing what must be done; third, determining concrete actions; and fourth, mobilizing to implement them. This structured approach ensures we move beyond frustration to strategic action, building clarity and consensus before we act, making our efforts focused and effective
                 </p>
                 <p className="font-semibold text-gray-900">
                   This platform aims to unite us around key actions that we need to take. It is impossible for us to survive if we continue thinking as individuals.

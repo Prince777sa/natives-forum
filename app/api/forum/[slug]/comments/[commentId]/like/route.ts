@@ -1,14 +1,14 @@
-// app/api/forum/[id]/like/route.ts - Handle forum post likes/dislikes
+// app/api/forum/[slug]/comments/[commentId]/like/route.ts - Handle comment likes/dislikes
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { pool } from '@/lib/db';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-// POST - Handle like/dislike on a forum post
+// POST - Handle like/dislike on a comment
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string; commentId: string }> }
 ) {
   try {
     // Get user from JWT token
@@ -32,7 +32,7 @@ export async function POST(
     }
 
     const resolvedParams = await params;
-    const postId = resolvedParams.id;
+    const { slug, commentId } = resolvedParams;
 
     // Get the isLike parameter from request body
     const { isLike } = await request.json();
@@ -50,13 +50,12 @@ export async function POST(
       // Start transaction
       await client.query('BEGIN');
 
-      // Check if forum post exists
+      // First, get the post ID from slug
       const postQuery = `
-        SELECT id, title
-        FROM forum_posts
-        WHERE id = $1 AND is_active = true
+        SELECT id FROM forum_posts
+        WHERE slug = $1 AND is_active = true
       `;
-      const postResult = await client.query(postQuery, [postId]);
+      const postResult = await client.query(postQuery, [slug]);
 
       if (postResult.rows.length === 0) {
         await client.query('ROLLBACK');
@@ -66,12 +65,30 @@ export async function POST(
         );
       }
 
-      // Check if user has already reacted to this post
-      const existingReactionQuery = `
-        SELECT id, is_like FROM forum_post_likes
-        WHERE post_id = $1 AND user_id = $2
+      const postId = postResult.rows[0].id;
+
+      // Check if comment exists
+      const commentQuery = `
+        SELECT id, comment
+        FROM forum_post_comments
+        WHERE id = $1 AND post_id = $2 AND is_active = true
       `;
-      const existingReactionResult = await client.query(existingReactionQuery, [postId, userId]);
+      const commentResult = await client.query(commentQuery, [commentId, postId]);
+
+      if (commentResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return NextResponse.json(
+          { error: 'Comment not found' },
+          { status: 404 }
+        );
+      }
+
+      // Check if user has already reacted to this comment
+      const existingReactionQuery = `
+        SELECT id, is_like FROM forum_comment_likes
+        WHERE comment_id = $1 AND user_id = $2
+      `;
+      const existingReactionResult = await client.query(existingReactionQuery, [commentId, userId]);
 
       let userReaction: boolean | null = null;
 
@@ -80,12 +97,12 @@ export async function POST(
 
         if (existingReaction.is_like === isLike) {
           // Same reaction - remove it (toggle off)
-          await client.query('DELETE FROM forum_post_likes WHERE id = $1', [existingReaction.id]);
+          await client.query('DELETE FROM forum_comment_likes WHERE id = $1', [existingReaction.id]);
           userReaction = null;
         } else {
           // Different reaction - update it
           await client.query(
-            'UPDATE forum_post_likes SET is_like = $1 WHERE id = $2',
+            'UPDATE forum_comment_likes SET is_like = $1 WHERE id = $2',
             [isLike, existingReaction.id]
           );
           userReaction = isLike;
@@ -93,9 +110,9 @@ export async function POST(
       } else {
         // No existing reaction - add new one
         await client.query(
-          `INSERT INTO forum_post_likes (post_id, user_id, is_like, created_at)
+          `INSERT INTO forum_comment_likes (comment_id, user_id, is_like, created_at)
            VALUES ($1, $2, $3, NOW())`,
-          [postId, userId, isLike]
+          [commentId, userId, isLike]
         );
         userReaction = isLike;
       }
@@ -105,17 +122,17 @@ export async function POST(
         SELECT
           COUNT(CASE WHEN is_like = true THEN 1 END) as like_count,
           COUNT(CASE WHEN is_like = false THEN 1 END) as dislike_count
-        FROM forum_post_likes
-        WHERE post_id = $1
+        FROM forum_comment_likes
+        WHERE comment_id = $1
       `;
-      const countsResult = await client.query(countsQuery, [postId]);
+      const countsResult = await client.query(countsQuery, [commentId]);
       const { like_count, dislike_count } = countsResult.rows[0];
 
       await client.query('COMMIT');
 
       return NextResponse.json({
         message: userReaction === null ? 'Reaction removed' :
-                userReaction ? 'Post liked' : 'Post disliked',
+                userReaction ? 'Comment liked' : 'Comment disliked',
         likeCount: parseInt(like_count) || 0,
         dislikeCount: parseInt(dislike_count) || 0,
         userReaction: userReaction
@@ -129,7 +146,7 @@ export async function POST(
     }
 
   } catch (error) {
-    console.error('Forum post reaction error:', error);
+    console.error('Comment reaction error:', error);
 
     if (error instanceof jwt.JsonWebTokenError) {
       return NextResponse.json(
@@ -142,54 +159,5 @@ export async function POST(
       { error: 'Internal server error' },
       { status: 500 }
     );
-  }
-}
-
-// GET - Check user's reaction to a forum post
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    // Verify authentication
-    const token = request.cookies.get('auth-token')?.value;
-
-    if (!token) {
-      return NextResponse.json({ userReaction: null });
-    }
-
-    let userId: string;
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-      userId = decoded.userId;
-    } catch (error) {
-      return NextResponse.json({ userReaction: null });
-    }
-
-    const resolvedParams = await params;
-    const postId = resolvedParams.id;
-
-    const client = await pool.connect();
-
-    try {
-      // Check user's reaction to this post
-      const userReactionQuery = `
-        SELECT is_like FROM forum_post_likes
-        WHERE post_id = $1 AND user_id = $2
-      `;
-      const userReactionResult = await client.query(userReactionQuery, [postId, userId]);
-      const userReaction = userReactionResult.rows.length > 0
-        ? userReactionResult.rows[0].is_like
-        : null;
-
-      return NextResponse.json({ userReaction });
-
-    } finally {
-      client.release();
-    }
-
-  } catch (error) {
-    console.error('Get user reaction error:', error);
-    return NextResponse.json({ userReaction: null });
   }
 }

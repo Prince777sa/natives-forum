@@ -9,15 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MessageCircle, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { MessageCircle, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import UserInfo from '@/components/UserInfo';
+import { copyToClipboard } from '@/lib/utils';
 
 interface ForumPost {
   id: string;
+  slug: string;
   title: string;
   content: string;
   excerpt: string;
@@ -68,6 +70,22 @@ const ForumPage = () => {
     fetchForumPosts();
   }, []);
 
+  const handleSharePost = async (post: ForumPost) => {
+    const postUrl = `${window.location.origin}/forum/${post.slug}`;
+
+    try {
+      const success = await copyToClipboard(postUrl);
+      if (success) {
+        toast.success('Post link copied to clipboard!');
+      } else {
+        toast.error('Failed to copy link');
+      }
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      toast.error('Failed to copy link');
+    }
+  };
+
 
   const fetchForumPosts = async () => {
     try {
@@ -82,23 +100,19 @@ const ForumPage = () => {
   };
 
 
-  const handleLikeDislike = async (postId: string, isLike: boolean) => {
+  const handleLikeDislike = async (post: ForumPost, isLike: boolean) => {
     if (!isAuthenticated) {
       toast.error('Please sign in to react to posts');
       return;
     }
 
-    // Find the current post to calculate optimistic updates
-    const currentPost = forumPosts.find(p => p.id === postId);
-    if (!currentPost) return;
-
     // Calculate optimistic state changes
-    let newLikeCount = currentPost.likeCount || 0;
-    let newDislikeCount = currentPost.dislikeCount || 0;
+    let newLikeCount = post.likeCount || 0;
+    let newDislikeCount = post.dislikeCount || 0;
     let newUserReaction: boolean | null = isLike;
     let action = 'added';
 
-    if (currentPost.userReaction === isLike) {
+    if (post.userReaction === isLike) {
       // Same reaction - remove it (toggle off)
       newUserReaction = null;
       if (isLike) {
@@ -107,7 +121,7 @@ const ForumPage = () => {
         newDislikeCount = Math.max(0, newDislikeCount - 1);
       }
       action = 'removed';
-    } else if (currentPost.userReaction !== null && currentPost.userReaction !== isLike) {
+    } else if (post.userReaction !== null && post.userReaction !== isLike) {
       // Different reaction - update it
       if (isLike) {
         newLikeCount += 1;
@@ -127,16 +141,19 @@ const ForumPage = () => {
       action = 'added';
     }
 
+    // Store original state for potential rollback
+    const originalPosts = [...forumPosts];
+
     // Optimistically update the UI immediately
-    const optimisticPosts = forumPosts.map(post =>
-      post.id === postId
+    const optimisticPosts = forumPosts.map(p =>
+      p.id === post.id
         ? {
-            ...post,
+            ...p,
             likeCount: newLikeCount,
             dislikeCount: newDislikeCount,
             userReaction: newUserReaction
           }
-        : post
+        : p
     );
     setForumPosts(optimisticPosts);
 
@@ -150,7 +167,7 @@ const ForumPage = () => {
     }
 
     try {
-      const response = await fetch(`/api/forum/${postId}/like`, {
+      const response = await fetch(`/api/forum/${post.slug}/like`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,25 +181,25 @@ const ForumPage = () => {
       if (response.ok) {
         // Update with server response to ensure consistency
         setForumPosts(posts =>
-          posts.map(post =>
-            post.id === postId
+          posts.map(p =>
+            p.id === post.id
               ? {
-                  ...post,
+                  ...p,
                   likeCount: result.likeCount,
                   dislikeCount: result.dislikeCount,
                   userReaction: result.userReaction
                 }
-              : post
+              : p
           )
         );
       } else {
         // Revert optimistic update on error
-        setForumPosts(forumPosts);
+        setForumPosts(originalPosts);
         toast.error(result.error || 'Failed to react to post');
       }
     } catch (error) {
       // Revert optimistic update on network error
-      setForumPosts(forumPosts);
+      setForumPosts(originalPosts);
       console.error('Like post error:', error);
       toast.error('Network error. Please try again.');
     }
@@ -247,8 +264,8 @@ const ForumPage = () => {
     setEditDialogOpen(true);
   };
 
-  const handleDeletePost = (postId: string) => {
-    setPostToDelete(postId);
+  const handleDeletePost = (postSlug: string) => {
+    setPostToDelete(postSlug);
     setDeleteDialogOpen(true);
   };
 
@@ -259,10 +276,11 @@ const ForumPage = () => {
     try {
       const response = await fetch(`/api/forum/${postToDelete}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (response.ok) {
-        setForumPosts(posts => posts.filter(post => post.id !== postToDelete));
+        setForumPosts(posts => posts.filter(post => post.slug !== postToDelete));
         toast.success('Post deleted successfully');
         setDeleteDialogOpen(false);
         setPostToDelete(null);
@@ -282,11 +300,12 @@ const ForumPage = () => {
 
     setSubmittingEdit(true);
     try {
-      const response = await fetch(`/api/forum/${editingPost.id}`, {
+      const response = await fetch(`/api/forum/${editingPost.slug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           title: editTitle.trim(),
           content: editContent.trim(),
@@ -575,7 +594,7 @@ const ForumPage = () => {
 
                     <div className="flex-1">
                       <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
-                        <Link href={`/forum/${post.id}`} className="hover:text-blue-600 transition-colors">
+                        <Link href={`/forum/${post.slug}`} className="hover:text-blue-600 transition-colors">
                           {post.title}
                         </Link>
                       </CardTitle>
@@ -604,7 +623,7 @@ const ForumPage = () => {
                             Edit Post
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDeletePost(post.id)}
+                            onClick={() => handleDeletePost(post.slug)}
                             className="text-red-600 focus:text-red-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
@@ -622,7 +641,7 @@ const ForumPage = () => {
                       {post.excerpt || post.content.substring(0, 300) + (post.content.length > 300 ? '...' : '')}
                     </p>
                     {(post.content.length > 300 || post.excerpt) && (
-                      <Link href={`/forum/${post.id}`}>
+                      <Link href={`/forum/${post.slug}`}>
                         <Button variant="outline" size="sm" className="mt-3 rounded-none border-orange-500 text-orange-600 hover:bg-orange-50">
                           Read More
                         </Button>
@@ -636,7 +655,7 @@ const ForumPage = () => {
                     <div className="flex items-center space-x-4">
                       {/* Like Button */}
                       <button
-                        onClick={() => handleLikeDislike(post.id, true)}
+                        onClick={() => handleLikeDislike(post, true)}
                         disabled={!isAuthenticated}
                         className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
                           post.userReaction === true
@@ -650,7 +669,7 @@ const ForumPage = () => {
 
                       {/* Dislike Button */}
                       <button
-                        onClick={() => handleLikeDislike(post.id, false)}
+                        onClick={() => handleLikeDislike(post, false)}
                         disabled={!isAuthenticated}
                         className={`flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors ${
                           post.userReaction === false
@@ -662,7 +681,7 @@ const ForumPage = () => {
                         <span>{post.dislikeCount || 0}</span>
                       </button>
 
-                      <Link href={`/forum/${post.id}`}>
+                      <Link href={`/forum/${post.slug}`}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -675,6 +694,15 @@ const ForumPage = () => {
                     </div>
 
                     <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSharePost(post)}
+                        className="flex items-center space-x-1 text-gray-600 hover:text-blue-600"
+                      >
+                        <Share2 className="h-4 w-4" />
+                        <span>Share</span>
+                      </Button>
                       <Badge variant="outline">Forum Post</Badge>
                     </div>
                   </div>

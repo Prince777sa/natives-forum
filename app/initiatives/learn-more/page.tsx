@@ -185,20 +185,20 @@ const initiativeDetails: { [key: string]: InitiativeDetail } = {
 
     'spaza-shop': {
       id: 'spaza-shop',
-      title: 'Spaza Shop Network',
-      description: 'Reclaim the informal economy by creating a network of native-owned spaza shops.',
-      longDescription: 'The Spaza Shop Network Initiative focuses on supporting and expanding native-owned spaza shops to reclaim control of the informal economy in our communities.',
+      title: 'Informal Economy',
+      description: 'Reclaim the informal economy by creating a network of native-owned businesses.',
+      longDescription: 'The informal economy initiative focuses on supporting and expanding native-owned businesses to reclaim control of the informal economy in our communities.',
       icon: ShoppingCart,
       color: 'bg-black',
       category: 'Informal Economy',
       status: 'Planning',
       targetParticipants: 2000,
 
-      overview: 'Spaza shops are the economic backbone of our communities, yet many are now owned by foreign nationals. This initiative aims to support native entrepreneurs in establishing and running successful spaza shops, creating a network of community-owned businesses.',
+      overview: 'The informal economy is the economic backbone of our communities, yet many are now owned by foreign nationals. This initiative aims to support native entrepreneurs in establishing and running successful businesses, creating a network of community-owned businesses.',
 
       objectives: [
-        'Support 2000 new native-owned spaza shops',
-        'Provide training and mentorship for spaza shop owners',
+        'Support 2000 new native-owned businesses',
+        'Provide training and mentorship for business owners',
         'Establish supply chain networks for better pricing',
         'Create access to business financing through our bank',
         'Implement modern payment systems and inventory management',
@@ -245,7 +245,7 @@ const initiativeDetails: { [key: string]: InitiativeDetail } = {
         'Ongoing business support and advisory services'
       ],
 
-      impact: 'A thriving network of native-owned spaza shops will reclaim economic control at the grassroots level, creating thousands of jobs and keeping money circulating within our communities.',
+      impact: 'A thriving network of native-owned businesses will reclaim economic control at the grassroots level, creating thousands of jobs and keeping money circulating within our communities.',
 
       nextSteps: [
         'Develop comprehensive business training program',
