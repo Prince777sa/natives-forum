@@ -339,7 +339,7 @@ const GroupsPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search branches by name, location, or province..."
+                placeholder="Search groups by name, location, or province..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 border-black rounded-none"
