@@ -67,8 +67,8 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+          <div className="hidden xl:block">
+            <div className="ml-10 flex items-baseline space-x-6">
               <Link 
                 href="/" 
                 className="text-black hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
@@ -92,6 +92,12 @@ const Navbar = () => {
                 className="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
               >
                 Forum
+              </Link>
+              <Link
+                href="/groups"
+                className="text-gray-600 hover:text-orange-600 px-3 py-2 text-sm font-medium transition-colors duration-200"
+              >
+                Groups
               </Link>
               <Link
                 href="/polls"
@@ -118,7 +124,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Auth Section */}
-          <div className="hidden md:flex items-center space-x-2">
+          <div className="hidden xl:flex items-center space-x-2">
             {isAuthenticated ? (
               <>
                 <NavbarAvatar user={user!} />
@@ -156,7 +162,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="xl:hidden">
             <button
               onClick={toggleMenu}
               className="text-gray-600 hover:text-black p-2 transition-colors duration-200"
@@ -173,7 +179,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation Menu */}
         {isOpen && (
-          <div className="md:hidden">
+          <div className="xl:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-black">
               <Link
                 href="/"
@@ -202,6 +208,13 @@ const Navbar = () => {
                 onClick={() => setIsOpen(false)}
               >
                 Forum
+              </Link>
+              <Link
+                href="/groups"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-orange-600 hover:bg-gray-50 transition-colors duration-200"
+                onClick={() => setIsOpen(false)}
+              >
+                Groups
               </Link>
               <Link
                 href="/polls"
