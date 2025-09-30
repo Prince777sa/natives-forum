@@ -1,14 +1,3 @@
-# Increase function timeout for email operations
-[[functions]]
-  path = "/api/auth/signup"
-  node_bundler = "esbuild"
-  timeout = 30
-
-[[functions]]
-  path = "/api/debug/*"
-  node_bundler = "esbuild"
-  timeout = 30
-
 # Environment variables available to functions
 [context.production.environment]
   NODE_ENV = "production"
