@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const client = await pool.connect();
 
     try {
-      let query = `
+      const query = `
         SELECT
           g.id,
           g.name,

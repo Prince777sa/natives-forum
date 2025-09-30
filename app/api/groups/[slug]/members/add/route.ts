@@ -4,14 +4,13 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// POST /api/groups/[groupId]/members/add - Add a member to group (admin or leader only)
+// POST /api/groups/[slug]/members/add - Add a member to group (admin or leader only)
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ groupId: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
-  try {
     const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
@@ -23,7 +22,6 @@ export async function POST(
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const userId = decoded.userId;
-    const groupId = groupId;
 
     const body = await request.json();
     const { membershipNumber, role = 'member' } = body;
@@ -45,16 +43,27 @@ export async function POST(
     const client = await pool.connect();
 
     try {
+      // Get group ID from slug
+      const groupResult = await client.query(
+        'SELECT id, leader_id, name FROM groups WHERE slug = $1 AND is_active = true',
+        [slug]
+      );
+
+      if (groupResult.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Group not found' },
+          { status: 404 }
+        );
+      }
+
+      const groupId = groupResult.rows[0].id;
+      const leader_id = groupResult.rows[0].leader_id;
+      const group_name = groupResult.rows[0].name;
+
       // Check if user is admin or group leader
       const authCheck = await client.query(
-        `SELECT
-          u.user_role,
-          g.leader_id,
-          g.name as group_name
-         FROM users u
-         LEFT JOIN groups g ON g.id = $2
-         WHERE u.id = $1 AND u.is_active = true`,
-        [userId, groupId]
+        `SELECT user_role FROM users WHERE id = $1 AND is_active = true`,
+        [userId]
       );
 
       if (authCheck.rows.length === 0) {
@@ -64,20 +73,13 @@ export async function POST(
         );
       }
 
-      const { user_role, leader_id, group_name } = authCheck.rows[0];
+      const user_role = authCheck.rows[0].user_role;
 
       // Only admin or group leader can add members
       if (user_role !== 'admin' && leader_id !== userId) {
         return NextResponse.json(
           { error: 'Only admins or group leaders can add members' },
           { status: 403 }
-        );
-      }
-
-      if (!group_name) {
-        return NextResponse.json(
-          { error: 'Group not found' },
-          { status: 404 }
         );
       }
 

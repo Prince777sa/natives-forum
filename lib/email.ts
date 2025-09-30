@@ -10,9 +10,33 @@ interface WelcomeEmailData {
 
 // Create transporter (configure based on your email provider)
 const createTransporter = () => {
+  // Validate required environment variables
+  const requiredEnvVars = [
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_SECURE',
+    'SMTP_USER',
+    'SMTP_PASSWORD',
+    'EMAIL_FROM'
+  ];
 
-  // Example for custom SMTP
-  return nodemailer.createTransport({
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+  if (missingVars.length > 0) {
+    console.error('❌ Missing required email environment variables:', missingVars);
+    console.error('📋 Current env status:', {
+      NODE_ENV: process.env.NODE_ENV,
+      SMTP_HOST: process.env.SMTP_HOST ? 'SET' : 'MISSING',
+      SMTP_PORT: process.env.SMTP_PORT ? 'SET' : 'MISSING',
+      SMTP_SECURE: process.env.SMTP_SECURE ? 'SET' : 'MISSING',
+      SMTP_USER: process.env.SMTP_USER ? 'SET' : 'MISSING',
+      SMTP_PASSWORD: process.env.SMTP_PASSWORD ? 'SET' : 'MISSING',
+      EMAIL_FROM: process.env.EMAIL_FROM ? 'SET' : 'MISSING',
+    });
+    throw new Error(`Missing email environment variables: ${missingVars.join(', ')}`);
+  }
+
+  const config = {
     host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: process.env.SMTP_SECURE === 'true',
@@ -20,7 +44,19 @@ const createTransporter = () => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASSWORD,
     },
+    debug: process.env.NODE_ENV === 'development', // Enable debug in development
+    logger: process.env.NODE_ENV === 'development', // Enable logger in development
+  };
+
+  console.log('📧 Creating SMTP transporter with config:', {
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    user: config.auth.user,
+    hasPassword: !!config.auth.pass,
   });
+
+  return nodemailer.createTransport(config);
 };
 
 // Welcome email template
@@ -100,7 +136,7 @@ const getWelcomeEmailHTML = (data: WelcomeEmailData) => {
     <body>
       <div class="container">
         <div class="header">
-          <div class="logo"><img src="/logo2.png" alt="NativesForum Logo" width="100" /></div>
+          <div class="logo"><img src="${process.env.FRONTEND_URL}/logo2.png" alt="NativesForum Logo" width="100" height="25" /></div>
           <h1>Welcome to the Movement!</h1>
         </div>
         
@@ -147,7 +183,7 @@ const getWelcomeEmailHTML = (data: WelcomeEmailData) => {
           <p>
             <strong>NativesForum</strong><br>
             Building consensus for native empowerment<br>
-            <a href="${process.env.FRONTEND_URL}">nativesforum.co.za</a>
+            <a href="${process.env.FRONTEND_URL}">nativesforum.org</a>
           </p>
           <p style="font-size: 12px; margin-top: 20px;">
             This email was sent to ${data.email}. If you have any questions, please contact our support team.
@@ -201,8 +237,10 @@ This email was sent to ${data.email}.
 // Send welcome email
 export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean> {
   try {
+    console.log('🚀 Starting welcome email send process for:', data.email);
+
     const transporter = createTransporter();
-    
+
     const mailOptions = {
       from: `"NativesForum" <${process.env.EMAIL_FROM}>`,
       to: data.email,
@@ -211,11 +249,48 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean>
       html: getWelcomeEmailHTML(data),
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('Welcome email sent successfully to:', data.email);
+    console.log('📧 Mail options configured:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      hasText: !!mailOptions.text,
+      hasHtml: !!mailOptions.html,
+    });
+
+    // Verify SMTP connection before sending
+    console.log('🔗 Verifying SMTP connection...');
+    await transporter.verify();
+    console.log('✅ SMTP connection verified successfully');
+
+    console.log('📤 Sending email...');
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Welcome email sent successfully to:', data.email);
+    console.log('📧 Message ID:', result.messageId);
+    console.log('📨 Response:', result.response);
+
     return true;
   } catch (error) {
-    console.error('Error sending welcome email:', error);
+    console.error('❌ Error sending welcome email to:', data.email);
+    console.error('❌ Error details:', error);
+
+    // Log specific error information
+    if (error instanceof Error) {
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error stack:', error.stack);
+    }
+
+    // Log additional SMTP error details if available
+    const smtpError = error as any;
+    if (smtpError.code) {
+      console.error('❌ SMTP Error code:', smtpError.code);
+    }
+    if (smtpError.response) {
+      console.error('❌ SMTP Response:', smtpError.response);
+    }
+    if (smtpError.responseCode) {
+      console.error('❌ SMTP Response code:', smtpError.responseCode);
+    }
+
     return false;
   }
 }

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MessageCircle, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2, Share2 } from 'lucide-react';
+import { MessageCircle, Calendar, Plus, ThumbsUp, ThumbsDown, MoreVertical, Edit, Trash2, Share2, Search, Filter, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -45,6 +45,13 @@ interface ForumPost {
 const ForumPage = () => {
   const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'mostLiked' | 'mostCommented' | 'trending'>('newest');
+
+  // Trending slider state
+  const [trendingSlideIndex, setTrendingSlideIndex] = useState(0);
 
   // Post creation state
   const [createPostDialogOpen, setCreatePostDialogOpen] = useState(false);
@@ -353,6 +360,53 @@ const ForumPage = () => {
     });
   };
 
+  // Calculate engagement score for trending
+  const calculateEngagementScore = (post: ForumPost) => {
+    return post.likeCount + (post.commentCount * 2); // Comments weighted higher
+  };
+
+  // Get top 3 trending posts
+  const trendingPosts = React.useMemo(() => {
+    return [...forumPosts]
+      .sort((a, b) => calculateEngagementScore(b) - calculateEngagementScore(a))
+      .slice(0, 3);
+  }, [forumPosts]);
+
+  // Filter and sort posts
+  const filteredAndSortedPosts = React.useMemo(() => {
+    let filtered = forumPosts;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(post =>
+        post.title.toLowerCase().includes(query) ||
+        post.content.toLowerCase().includes(query) ||
+        post.author.name.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'oldest':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'mostLiked':
+          return b.likeCount - a.likeCount;
+        case 'mostCommented':
+          return b.commentCount - a.commentCount;
+        case 'trending':
+          return calculateEngagementScore(b) - calculateEngagementScore(a);
+        default:
+          return 0;
+      }
+    });
+
+    return sorted;
+  }, [forumPosts, searchQuery, sortBy]);
+
   const totalPosts = forumPosts.length;
   const totalLikes = forumPosts.reduce((sum, post) => sum + post.likeCount, 0);
   const totalComments = forumPosts.reduce((sum, post) => sum + post.commentCount, 0);
@@ -399,6 +453,69 @@ const ForumPage = () => {
               <div className="text-3xl font-bold text-orange-600">{totalComments}</div>
               <div className="text-sm text-gray-600">Comments</div>
             </div>
+          </div>
+
+          {/* Search and Filter Section */}
+          <div className="max-w-4xl mx-auto mb-8 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search Bar */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="Search posts by title, content, or author..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 border-black rounded-none"
+                />
+              </div>
+
+              {/* Sort Filter */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="rounded-none border-black min-w-[140px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    {sortBy === 'newest' && 'Newest First'}
+                    {sortBy === 'oldest' && 'Oldest First'}
+                    {sortBy === 'mostLiked' && 'Most Liked'}
+                    {sortBy === 'mostCommented' && 'Most Discussed'}
+                    {sortBy === 'trending' && 'Trending'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuItem onClick={() => setSortBy('newest')}>
+                    Newest First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('oldest')}>
+                    Oldest First
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('mostLiked')}>
+                    Most Liked
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('mostCommented')}>
+                    Most Discussed
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('trending')}>
+                    Trending (Most Engagement)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Search Results Info */}
+            {searchQuery.trim() && (
+              <div className="text-sm text-gray-600">
+                Found {filteredAndSortedPosts.length} {filteredAndSortedPosts.length === 1 ? 'post' : 'posts'} matching "{searchQuery}"
+                {filteredAndSortedPosts.length > 0 && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="ml-2 text-orange-600 hover:text-orange-700 font-medium"
+                  >
+                    Clear search
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Create Post Button */}
@@ -562,6 +679,133 @@ const ForumPage = () => {
           </Dialog>
         </div>
 
+        {/* Trending Posts Slider */}
+        {trendingPosts.length > 0 && (
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="h-6 w-6 text-orange-600" />
+              <h2 className="text-2xl font-bold text-gray-900">Trending Posts</h2>
+            </div>
+
+            <div className="relative">
+              <Card className="border-2 border-orange-500 rounded-none overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100">
+                  <div className="flex items-start gap-4">
+                    <UserInfo
+                      user={{
+                        id: trendingPosts[trendingSlideIndex].author.id,
+                        firstName: trendingPosts[trendingSlideIndex].author.firstName,
+                        lastName: trendingPosts[trendingSlideIndex].author.lastName,
+                        membershipNumber: trendingPosts[trendingSlideIndex].author.membershipNumber,
+                        userRole: trendingPosts[trendingSlideIndex].author.userRole,
+                        profileImageUrl: trendingPosts[trendingSlideIndex].author.profileImageUrl,
+                        verificationStatus: trendingPosts[trendingSlideIndex].author.verificationStatus
+                      }}
+                      avatarSize="lg"
+                      showRole={true}
+                      showMembershipNumber={false}
+                      layout="horizontal"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className="bg-orange-600 text-white">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          #{trendingSlideIndex + 1} Trending
+                        </Badge>
+                        <Badge variant="outline" className="border-orange-400 text-orange-700">
+                          {calculateEngagementScore(trendingPosts[trendingSlideIndex])} engagement points
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+                        <Link
+                          href={`/forum/${trendingPosts[trendingSlideIndex].slug}`}
+                          className="hover:text-orange-600 transition-colors"
+                        >
+                          {trendingPosts[trendingSlideIndex].title}
+                        </Link>
+                      </CardTitle>
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {formatDate(trendingPosts[trendingSlideIndex].createdAt)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="pt-6">
+                  <div className="prose max-w-none mb-4">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-lg">
+                      {trendingPosts[trendingSlideIndex].excerpt ||
+                       trendingPosts[trendingSlideIndex].content.substring(0, 200) +
+                       (trendingPosts[trendingSlideIndex].content.length > 200 ? '...' : '')}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 text-green-600">
+                      <ThumbsUp className="h-5 w-5" />
+                      <span className="font-semibold">{trendingPosts[trendingSlideIndex].likeCount}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-blue-600">
+                      <MessageCircle className="h-5 w-5" />
+                      <span className="font-semibold">{trendingPosts[trendingSlideIndex].commentCount}</span>
+                    </div>
+                    <Link href={`/forum/${trendingPosts[trendingSlideIndex].slug}`}>
+                      <Button className="bg-orange-600 hover:bg-orange-700 text-white rounded-none">
+                        View Full Discussion
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Navigation Arrows */}
+              {trendingPosts.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setTrendingSlideIndex((prev) =>
+                      prev === 0 ? trendingPosts.length - 1 : prev - 1
+                    )}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all hover:scale-110"
+                    aria-label="Previous trending post"
+                  >
+                    <ChevronLeft className="h-6 w-6 text-gray-800" />
+                  </button>
+                  <button
+                    onClick={() => setTrendingSlideIndex((prev) =>
+                      prev === trendingPosts.length - 1 ? 0 : prev + 1
+                    )}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all hover:scale-110"
+                    aria-label="Next trending post"
+                  >
+                    <ChevronRight className="h-6 w-6 text-gray-800" />
+                  </button>
+                </>
+              )}
+
+              {/* Slide Indicators */}
+              {trendingPosts.length > 1 && (
+                <div className="flex justify-center gap-2 mt-4">
+                  {trendingPosts.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setTrendingSlideIndex(index)}
+                      className={`h-2 rounded-full transition-all ${
+                        index === trendingSlideIndex
+                          ? 'w-8 bg-orange-600'
+                          : 'w-2 bg-gray-300 hover:bg-gray-400'
+                      }`}
+                      aria-label={`Go to trending post ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Forum Posts */}
         <div className="space-y-8">
           {forumPosts.length === 0 ? (
@@ -571,8 +815,15 @@ const ForumPage = () => {
                 <p className="text-gray-600">Be the first to start a discussion with the community!</p>
               </CardContent>
             </Card>
+          ) : filteredAndSortedPosts.length === 0 ? (
+            <Card className="text-center py-12 rounded-none">
+              <CardContent>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts found</h3>
+                <p className="text-gray-600">Try adjusting your search or filters</p>
+              </CardContent>
+            </Card>
           ) : (
-            forumPosts.map((post) => (
+            filteredAndSortedPosts.map((post) => (
               <Card key={post.id} className="border-l-4 border-l-orange-500 hover:shadow-lg transition-shadow duration-200 rounded-none">
                 <CardHeader>
                   <div className="flex items-start gap-4">

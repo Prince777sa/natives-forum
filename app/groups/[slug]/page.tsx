@@ -490,7 +490,7 @@ const GroupDetailPage = () => {
                         <select
                           id="post-type"
                           value={postType}
-                          onChange={(e) => setPostType(e.target.value as any)}
+                          onChange={(e) => setPostType(e.target.value as 'announcement' | 'event' | 'discussion')}
                           className="w-full border border-black rounded-none px-3 py-2 bg-white"
                         >
                           <option value="announcement">Announcement</option>
@@ -588,7 +588,7 @@ const GroupDetailPage = () => {
                   <p className="text-gray-600">
                     {canCreatePost
                       ? 'Be the first to create a post!'
-                      : 'Join this branch to see posts and participate.'}
+                      : 'Join this group to see posts and participate.'}
                   </p>
                 </CardContent>
               </Card>

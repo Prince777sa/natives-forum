@@ -1,0 +1,26 @@
+[build]
+  functions = ".netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Increase function timeout for email operations
+[[functions]]
+  path = "/api/auth/signup"
+  timeout = 30
+
+[[functions]]
+  path = "/api/debug/*"
+  timeout = 30
+
+# Environment variables available to functions
+[context.production.environment]
+  NODE_ENV = "production"
+
+# Headers for CORS if needed
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
