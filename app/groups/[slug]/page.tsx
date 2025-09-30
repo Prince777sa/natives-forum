@@ -398,7 +398,7 @@ const GroupDetailPage = () => {
           <Card className="text-center py-12 rounded-none">
             <CardContent>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Group not found</h3>
-              <p className="text-gray-600 mb-4">The group you're looking for doesn't exist.</p>
+              <p className="text-gray-600 mb-4">The group you&apos;re looking for doesn&apos;t exist.</p>
               <Link href="/groups">
                 <Button className="bg-orange-600 hover:bg-orange-700 text-white rounded-none">
                   View All Groups

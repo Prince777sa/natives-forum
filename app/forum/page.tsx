@@ -505,7 +505,7 @@ const ForumPage = () => {
             {/* Search Results Info */}
             {searchQuery.trim() && (
               <div className="text-sm text-gray-600">
-                Found {filteredAndSortedPosts.length} {filteredAndSortedPosts.length === 1 ? 'post' : 'posts'} matching "{searchQuery}"
+                Found {filteredAndSortedPosts.length} {filteredAndSortedPosts.length === 1 ? 'post' : 'posts'} matching &quot;{searchQuery}&quot;
                 {filteredAndSortedPosts.length > 0 && (
                   <button
                     onClick={() => setSearchQuery('')}

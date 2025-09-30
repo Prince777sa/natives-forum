@@ -280,7 +280,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean>
     }
 
     // Log additional SMTP error details if available
-    const smtpError = error as any;
+    const smtpError = error as { code?: string; response?: string; responseCode?: number };
     if (smtpError.code) {
       console.error('❌ SMTP Error code:', smtpError.code);
     }

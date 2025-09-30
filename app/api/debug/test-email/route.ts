@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     console.log('📧 Environment variables check:', envCheck);
 
     // Create transporter with detailed logging
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
@@ -74,12 +74,13 @@ export async function POST(request: NextRequest) {
     console.error('❌ Email test error:', error);
 
     // Get more detailed error information
+    const smtpError = error as { code?: string; command?: string; response?: string; responseCode?: number };
     const errorDetails = {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as any)?.code,
-      command: (error as any)?.command,
-      response: (error as any)?.response,
-      responseCode: (error as any)?.responseCode,
+      code: smtpError?.code,
+      command: smtpError?.command,
+      response: smtpError?.response,
+      responseCode: smtpError?.responseCode,
     };
 
     return NextResponse.json({
