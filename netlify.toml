@@ -1,6 +1,3 @@
-[build]
-  functions = ".netlify/functions"
-
 # Increase function timeout for email operations
 [[functions]]
   path = "/api/auth/signup"
