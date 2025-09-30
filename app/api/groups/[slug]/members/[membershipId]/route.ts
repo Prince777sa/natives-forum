@@ -4,14 +4,13 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// DELETE /api/groups/[groupId]/members/[membershipId] - Remove a member (admin or leader only)
+// DELETE /api/groups/[slug]/members/[membershipId] - Remove a member (admin or leader only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ groupId: string; membershipId: string }> }
+  { params }: { params: Promise<{ slug: string; membershipId: string }> }
 ) {
   try {
-    const { slug } = await params;
-  try {
+    const { slug, membershipId } = await params;
     const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
@@ -23,20 +22,30 @@ export async function DELETE(
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const userId = decoded.userId;
-    const { groupId, membershipId } = params;
 
     const client = await pool.connect();
 
     try {
+      // Get group ID from slug
+      const groupResult = await client.query(
+        'SELECT id, leader_id FROM groups WHERE slug = $1 AND is_active = true',
+        [slug]
+      );
+
+      if (groupResult.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Group not found' },
+          { status: 404 }
+        );
+      }
+
+      const groupId = groupResult.rows[0].id;
+      const leader_id = groupResult.rows[0].leader_id;
+
       // Check if user is admin or group leader
       const authCheck = await client.query(
-        `SELECT
-          u.user_role,
-          g.leader_id
-         FROM users u
-         LEFT JOIN groups g ON g.id = $2
-         WHERE u.id = $1 AND u.is_active = true`,
-        [userId, groupId]
+        `SELECT user_role FROM users WHERE id = $1 AND is_active = true`,
+        [userId]
       );
 
       if (authCheck.rows.length === 0) {
@@ -46,7 +55,7 @@ export async function DELETE(
         );
       }
 
-      const { user_role, leader_id } = authCheck.rows[0];
+      const user_role = authCheck.rows[0].user_role;
 
       // Only admin or group leader can remove members
       if (user_role !== 'admin' && leader_id !== userId) {
@@ -104,14 +113,13 @@ export async function DELETE(
   }
 }
 
-// PATCH /api/groups/[groupId]/members/[membershipId] - Update member role (admin or leader only)
+// PATCH /api/groups/[slug]/members/[membershipId] - Update member role (admin or leader only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ groupId: string; membershipId: string }> }
+  { params }: { params: Promise<{ slug: string; membershipId: string }> }
 ) {
   try {
-    const { slug } = await params;
-  try {
+    const { slug, membershipId } = await params;
     const token = request.cookies.get('auth-token')?.value;
 
     if (!token) {
@@ -123,7 +131,6 @@ export async function PATCH(
 
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     const userId = decoded.userId;
-    const { groupId, membershipId } = params;
 
     const body = await request.json();
     const { role } = body;
@@ -138,15 +145,26 @@ export async function PATCH(
     const client = await pool.connect();
 
     try {
+      // Get group ID from slug
+      const groupResult = await client.query(
+        'SELECT id, leader_id FROM groups WHERE slug = $1 AND is_active = true',
+        [slug]
+      );
+
+      if (groupResult.rows.length === 0) {
+        return NextResponse.json(
+          { error: 'Group not found' },
+          { status: 404 }
+        );
+      }
+
+      const groupId = groupResult.rows[0].id;
+      const leader_id = groupResult.rows[0].leader_id;
+
       // Check if user is admin or group leader
       const authCheck = await client.query(
-        `SELECT
-          u.user_role,
-          g.leader_id
-         FROM users u
-         LEFT JOIN groups g ON g.id = $2
-         WHERE u.id = $1 AND u.is_active = true`,
-        [userId, groupId]
+        `SELECT user_role FROM users WHERE id = $1 AND is_active = true`,
+        [userId]
       );
 
       if (authCheck.rows.length === 0) {
@@ -156,7 +174,7 @@ export async function PATCH(
         );
       }
 
-      const { user_role, leader_id } = authCheck.rows[0];
+      const user_role = authCheck.rows[0].user_role;
 
       // Only admin or group leader can change roles
       if (user_role !== 'admin' && leader_id !== userId) {
