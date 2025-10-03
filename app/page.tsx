@@ -45,8 +45,8 @@ const LandingPage = () => {
     },
     {
       icon: ShoppingCart,
-      title: "Informal Economy",
-      description: "Reclaiming and formalizing the informal economy to create sustainable livelihoods and economic opportunities.",
+      title: "Cooperative Business Networks",
+      description: "Create interconnected worker-owned cooperatives across sectors—manufacturing, retail and distribution, services (cleaning, security, transport), and tech/digital services—including control of the informal economy (spaza shops, etc.). These businesses trade preferentially with each other, keeping wealth circulating internally.",
       color: "bg-gray-800"
     },
     {

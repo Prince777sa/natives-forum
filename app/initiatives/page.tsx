@@ -56,7 +56,7 @@ const InitiativesPage = () => {
   // Helper functions to get icon and other styling based on category/title
   const getInitiativeIcon = (title: string, category: string) => {
     if (title.includes('Bank') || category === 'Banking') return Building2;
-    if (title.includes('Spaza') || category === 'Informal Economy') return ShoppingCart;
+    if (title.includes('Spaza') || title.includes('Cooperative') || category === 'Informal Economy' || category === 'Cooperative Business Networks') return ShoppingCart;
     if (title.includes('Food') || category?.includes('Agriculture')) return Wheat;
     if (title.includes('Industrial') || category?.includes('Manufacturing') || category?.includes('Industry')) return Factory;
     if (title.includes('Political') || category?.includes('Politics')) return Vote;
@@ -85,11 +85,11 @@ const InitiativesPage = () => {
       "Start as online bank, expand to physical branches",
       "Focus on serving native community needs"
     ];
-    if (title.includes('Spaza')) return [
-      "Support for new the informal economy entrepreneurs",
-      "Training and mentorship programs",
-      "Access to bank financing",
-      "Mobile payment integration"
+    if (title.includes('Spaza') || title.includes('Cooperative')) return [
+      "Worker-owned cooperatives across sectors",
+      "Manufacturing, retail, services, and tech networks",
+      "Control of informal economy (spaza shops, etc.)",
+      "Preferential trading to keep wealth circulating internally"
     ];
     if (title.includes('Food')) return [
       "Sustainable farming practices",
@@ -186,7 +186,7 @@ const InitiativesPage = () => {
               Agriculture & Food
             </Button>
             <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
-              Informal Economy
+              Cooperative Business Networks
             </Button>
             <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
               Manufacturing & Industry
@@ -277,7 +277,7 @@ const InitiativesPage = () => {
                           Get Notified <Heart className="ml-2 h-4 w-4" />
                         </Button>
                       )}
-                      <Link href={`/initiatives/learn-more?initiative=${initiative.title.includes('Bank') ? 'commercial-bank' : initiative.title.includes('Spaza') || initiative.title.includes('Informal') ? 'spaza-shop' : initiative.title.includes('Food') ? 'food-value-chain' : initiative.title.includes('Industrial') ? 'industrial-development' : 'political-representation'}`}>
+                      <Link href={`/initiatives/learn-more?initiative=${initiative.title.includes('Bank') ? 'commercial-bank' : initiative.title.includes('Spaza') || initiative.title.includes('Informal') || initiative.title.includes('Cooperative') ? 'spaza-shop' : initiative.title.includes('Food') ? 'food-value-chain' : initiative.title.includes('Industrial') ? 'industrial-development' : 'political-representation'}`}>
                         <Button variant="outline" className="border-black rounded-none text-black hover:bg-black hover:text-white">
                           Learn More
                         </Button>

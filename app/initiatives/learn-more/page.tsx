@@ -185,74 +185,76 @@ const initiativeDetails: { [key: string]: InitiativeDetail } = {
 
     'spaza-shop': {
       id: 'spaza-shop',
-      title: 'Informal Economy',
-      description: 'Reclaim the informal economy by creating a network of native-owned businesses.',
-      longDescription: 'The informal economy initiative focuses on supporting and expanding native-owned businesses to reclaim control of the informal economy in our communities.',
+      title: 'Cooperative Business Networks',
+      description: 'Create interconnected worker-owned cooperatives across sectors to control our businesses and keep wealth circulating internally.',
+      longDescription: 'The Cooperative Business Networks initiative focuses on creating interconnected worker-owned cooperatives across manufacturing, retail, services, and tech sectors, including control of the informal economy.',
       icon: ShoppingCart,
       color: 'bg-black',
-      category: 'Informal Economy',
+      category: 'Cooperative Business Networks',
       status: 'Planning',
       targetParticipants: 2000,
 
-      overview: 'The informal economy is the economic backbone of our communities, yet many of these businesses are now owned by foreign nationals. This initiative aims to support native entrepreneurs in establishing and running successful businesses, creating a network of community-owned businesses.',
+      overview: 'Build economic power through interconnected worker-owned cooperatives across all sectors. From manufacturing to retail, from services to tech, these cooperatives will trade preferentially with each other, keeping wealth circulating within our communities and creating a self-sustaining economic ecosystem.',
 
       objectives: [
-        'Support 2000 new native-owned businesses',
-        'Provide training and mentorship for business owners',
-        'Establish supply chain networks for better pricing',
-        'Create access to business financing through our bank',
-        'Implement modern payment systems and inventory management',
-        'Build cooperative buying power for bulk purchasing'
+        'Establish manufacturing cooperatives for production control',
+        'Create retail and distribution cooperative networks',
+        'Build service cooperatives (cleaning, security, transport)',
+        'Develop tech and digital service cooperatives',
+        'Control the informal economy (spaza shops, etc.)',
+        'Enable preferential trading between cooperatives to circulate wealth internally'
       ],
 
       benefits: [
-        'Job creation in local communities',
-        'Profits remain within native communities',
-        'Improved access to essential goods and services',
-        'Skills development in entrepreneurship',
-        'Strengthened local economic ecosystems',
-        'Reduced dependency on external suppliers'
+        'Worker ownership and democratic control of businesses',
+        'Wealth circulates within native communities through preferential trading',
+        'Economic self-sufficiency across multiple sectors',
+        'Skills development in manufacturing, services, and technology',
+        'Control of the informal economy by community members',
+        'Reduced dependency on external suppliers and foreign-owned businesses'
       ],
 
       implementation: [
         {
-          phase: 'Phase 1: Program Development',
-          description: 'Create training curriculum and support systems',
+          phase: 'Phase 1: Cooperative Framework Development',
+          description: 'Establish legal structures, governance models, and training programs for worker-owned cooperatives',
           timeline: 'Months 1-6'
         },
         {
-          phase: 'Phase 2: Pilot Launch',
-          description: 'Launch pilot program with 50 shops in select areas',
+          phase: 'Phase 2: Sector Pilots',
+          description: 'Launch pilot cooperatives in manufacturing, retail, services, and tech sectors',
           timeline: 'Months 6-12'
         },
         {
-          phase: 'Phase 3: Network Expansion',
-          description: 'Scale successful model to 500 shops',
+          phase: 'Phase 3: Network Integration',
+          description: 'Connect cooperatives for preferential trading and shared resources',
           timeline: 'Months 12-24'
         },
         {
-          phase: 'Phase 4: Full Rollout',
-          description: 'Reach target of 2000 network shops',
+          phase: 'Phase 4: Scale and Expansion',
+          description: 'Expand network across all sectors and regions, including informal economy',
           timeline: 'Months 24-36'
         }
       ],
 
       requirements: [
-        'Business training and mentorship programs',
-        'Access to startup capital and financing',
-        'Supply chain partnerships and bulk purchasing agreements',
-        'Technology systems for inventory and payments',
-        'Ongoing business support and advisory services'
+        'Cooperative governance and legal framework development',
+        'Worker training in cooperative ownership and management',
+        'Access to startup capital through community bank',
+        'Inter-cooperative trading platforms and agreements',
+        'Technology systems for coordination and resource sharing',
+        'Sector-specific technical training and support'
       ],
 
-      impact: 'A thriving network of native-owned businesses will reclaim economic control at the grassroots level, creating thousands of jobs and keeping money circulating within our communities.',
+      impact: 'Interconnected worker-owned cooperatives will create a self-sustaining economic ecosystem where wealth circulates internally. By controlling businesses across manufacturing, retail, services, tech, and the informal economy, communities gain true economic independence and collective prosperity.',
 
       nextSteps: [
-        'Develop comprehensive business training program',
-        'Establish partnerships with suppliers and wholesalers',
-        'Create financing mechanisms through the bank',
-        'Identify and recruit initial participants',
-        'Set up technology and payment systems'
+        'Develop cooperative legal structures and governance models',
+        'Create sector-specific training programs for worker-owners',
+        'Establish cooperative financing through the bank',
+        'Identify pilot cooperative opportunities in each sector',
+        'Build inter-cooperative trading and coordination systems',
+        'Launch community outreach and education campaigns'
       ]
     },
 
